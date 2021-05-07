@@ -114,6 +114,8 @@ int handleClient(int clientSocket){
     // ---------- Handle client in new thread ----------
     newClient->clientSocket = clientSocket;
     pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, &clientSocket);
+
+    return SUCCESS_CLIENT_HANDLE;
 }
 
 
