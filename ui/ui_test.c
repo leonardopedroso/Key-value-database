@@ -1,8 +1,10 @@
 #include "ui.h"
+#include <stdlib.h>
 
 int main(void){
-    char *groupName;
+    char *groupName = NULL;
     int action;
+    char *secret = NULL;
 
     while(1){
         printMenu();
@@ -11,10 +13,15 @@ int main(void){
 
         switch(action){
             case CREATE_DES:
-                printf("Creating group %s\n",groupName);
+                // createGroup(groupList,secret);
+                secret = (char *) calloc(10,sizeof(char));
+                strcpy(secret,"Ola");
+                printf("Created group %s with secret %s\n",groupName,secret);
+                free(secret);
                 break;
             case DELETE_DES:
-                printf("Deleting group %s\n",groupName);
+                // deleteGroup(groupList);
+                printf("Deleted group %s\n",groupName);
                 break;
             case GROUP_DES:
                 printf("Showing group %s\n",groupName);
@@ -24,6 +31,8 @@ int main(void){
                 break;
         }
     }
+
+    free(groupName);
 
     return 0;
 }
