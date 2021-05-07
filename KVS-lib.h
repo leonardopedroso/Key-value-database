@@ -14,7 +14,11 @@
 #define SUCCESS_ESTABLISH_CONNECTION 0
 #define ERROR_CREATING_SOCK -1
 #define ERROR_CONNECTION_SERVER -2
+
 int establish_connection (char * group_id, char * secret);
+
+
+int send_pair(int msgId, char * str1, char * str2);
 
 
 #endif

@@ -5,7 +5,8 @@
 
 int main(){
 
-    
-
+    establish_connection (NULL,NULL);
+    printf("%d\n",strlen("a"));
+    sleep(2);
     exit(0);
 }

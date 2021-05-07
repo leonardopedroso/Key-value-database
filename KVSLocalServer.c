@@ -46,6 +46,7 @@ int main(){
 
 
     // [ADD SERVER CONSOLE BELOW]
+    while(1){}
 
 
     exit(0);
@@ -81,6 +82,8 @@ void * KVSLocalServerThread(void * server_sock){
 
 void * KVSLocalServerClientThread(void * clientSocket){
 
+    // ---------- Authenticate client ----------
+    
 
 
     pthread_exit(NULL); // Close KVSServerThread
