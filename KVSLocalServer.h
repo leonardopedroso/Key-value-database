@@ -22,35 +22,35 @@ typedef struct clientStruct{
 void * KVSLocalServerThread(void * server_sock);
 void * KVSLocalServerClientThread(void * clientSocket);
 
-// ---------- Server and client mangement prototypes ----------
+// ---------- Server and client management prototypes ----------
 #define SUCCESS_CLIENT_HANDLE 0
 #define ERROR_CLIENT_ALLOCATION -1
 
 int handleClient(int sockClient);
+// [IMPLEMENT manageClients to avoid synch problems]
+// [TODAS AS ACOES QUE ALTEREM A MEMORIA DA LISTA DE CLIENTES TEM DE PASSAR PELA FUNÇAO manageClients]
+//void manageClients(int action,...)
+void closeClient(CLIENT * client);
 void closeClients();
 
-// ---------- Data management ----------
-// [POR ENQUANTO ESTAMOS A ETABELECER UM LIMITE DE CARACTERES MAS 
-// PODE-SE NA BOA ALOCAR DINAMICAMENTE SEM LIMITE SE QUISERMOS DEPOIS]
-// Data management parameters
-#define KEY_MAX_LENGTH 20
-#define VALUE_MAX_LENGTH 20
-#define GROUP_ID_MAX_LENGTH 20
-#define GROUP_SECRET_MAX_LENGTH 20
+// ---------- Data management prototypes ----------
 
 // Struct to hold key-value pairs
 typedef struct entryStruct{
-    char key[KEY_MAX_LENGTH];
-    char value[KEY_MAX_LENGTH];
+    char * key; //with malloc instead of char key[MAX_STR_LENGTH];
+    char * value; //with malloc instead of char value[MAX_STR_LENGTH];
 
     struct entryStruct * prox;
 }ENTRY;
 
 // Struct to hold 
 typedef struct groupStruct{
-    char id[GROUP_ID_MAX_LENGTH];
+    char * id; //with malloc instead of char id[MAX_STR_LENGTH];
     ENTRY * entries;
 
     struct groupStruct * prox;
 }GROUP;
 
+// [IMPLEMENT manageData to avoid synch problems]
+// [TODAS AS ACOES QUE ALTEREM A MEMORIA TEM DE PASSAR PELA FUNÇAO manageData]
+//void manageData(int action,...)

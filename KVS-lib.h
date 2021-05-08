@@ -11,14 +11,12 @@
 // Define server parameters
 #define KVS_LOCAL_SERVER_ADDR "/tmp/KVSLocalServer"
 
-#define SUCCESS_ESTABLISH_CONNECTION 0
-#define ERROR_CREATING_SOCK -1
-#define ERROR_CONNECTION_SERVER -2
-
+#define ESTBL_CONN_SUCCESS 0
+#define ESTBL_CONN_ACCSS_DENIED -1
+#define ESTBL_CONN_ERROR_CREATING_SOCK -100
+#define ESTBL_CONN_CONNECTION_SERVER -101
+#define ESTBL_CONN_COM_SERVER -102
 int establish_connection (char * group_id, char * secret);
-
-
-int send_pair(int msgId, char * str1, char * str2);
 
 
 #endif

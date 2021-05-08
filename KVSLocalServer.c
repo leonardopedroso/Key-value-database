@@ -1,4 +1,5 @@
 #include "KVSLocalServer.h"
+#include "KVS-lib-MACROS.h"
 
 
 // ---------- Global variables ----------
@@ -80,10 +81,20 @@ void * KVSLocalServerThread(void * server_sock){
     pthread_exit(NULL); // Close KVSServerThread
 }
 
-void * KVSLocalServerClientThread(void * clientSocket){
+void * KVSLocalServerClientThread(void * client){
+    
+    // Allocate buffers
+    char buffer1[MAX_STR_LENGTH];
+    int buffer1Len;
+    char buffer2[MAX_STR_LENGTH];
+    int buffer2Len;
+    int msgId = 0;
 
     // ---------- Authenticate client ----------
     
+    
+
+
 
 
     pthread_exit(NULL); // Close KVSServerThread
@@ -101,7 +112,8 @@ int handleClient(int clientSocket){
     }
 
     // ---------- Add new client block to the linked list ----------
-    // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO]
+    // [ISTO TEM DE ENTARR NA função manageClients]
+    // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO] 
     // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
     CLIENT * searchPointer = clients;
     if(searchPointer == NULL){
@@ -116,7 +128,7 @@ int handleClient(int clientSocket){
 
     // ---------- Handle client in new thread ----------
     newClient->clientSocket = clientSocket;
-    pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, &clientSocket);
+    pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, (void *) newClient);
 
     return SUCCESS_CLIENT_HANDLE;
 }
