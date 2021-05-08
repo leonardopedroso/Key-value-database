@@ -15,6 +15,7 @@
 typedef struct clientStruct{
     int clientSocket;
     pthread_t clientThread;
+    
     struct clientStruct * prox;
 }CLIENT;
 
