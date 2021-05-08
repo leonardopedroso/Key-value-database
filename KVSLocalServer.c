@@ -1,4 +1,5 @@
 #include "KVSLocalServer.h"
+#include "KVSLocalServer-com.h"
 #include "KVS-lib-MACROS.h"
 
 
@@ -91,11 +92,10 @@ void * KVSLocalServerClientThread(void * client){
     int msgId = 0;
 
     // ---------- Authenticate client ----------
-    
-    
-
-
-
+    rcvQueryKVSLocalServer(((CLIENT * ) client)->clientSocket, &msgId, &buffer1[0], &buffer1[0]);
+    // [check authentication]
+    ansQueryKVSLocalServer(((CLIENT * ) client)->clientSocket,STATUS_OK,NULL);
+    printf("Response sent\n");
 
     pthread_exit(NULL); // Close KVSServerThread
 }

@@ -13,5 +13,8 @@
 #define RCV_QUERY_SUCCESS 0
 #define RCV_QUERY_COM_ERROR -100
 int rcvQueryKVSLocalServer(int clientSock, int * msgId, char * str1, char * str2);
+#define ANS_QUERY_SUCCESS 0
+#define ANS_QUERY_COM_ERROR -100
+int ansQueryKVSLocalServer(int clientSock, int status, char * str1);
 
 #endif

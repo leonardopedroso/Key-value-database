@@ -42,3 +42,17 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char * str1, char * str2
     }
     return RCV_QUERY_SUCCESS;
 }
+
+int ansQueryKVSLocalServer(int clientSock, int status, char * str1){
+    // Send status / response string length
+    if(write(clientSock,&status,sizeof(int))<= 0){
+        return ANS_QUERY_COM_ERROR;
+    }
+    if(status >= 0){
+        // Send string response
+        if(write(clientSock,str1,status)<= 0){
+            return ANS_QUERY_COM_ERROR;
+        }
+    }
+    return ANS_QUERY_SUCCESS;
+}
