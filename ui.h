@@ -33,7 +33,7 @@ void printMenu(void);
 // Maximum input to be gotten from the keyboard
 // Must be higher than the sum of MAX_GROUP_ID and the lengths of each the
 // command and the delimiter
-#define MAX_INPUT 50
+#define MAX_INPUT MAX_GROUP_ID+20
 // \brief Gets a command from the user and, in case of error, explains it
 // \param groupName so that the function can communicate to the outside the 
 // name of the group it received
