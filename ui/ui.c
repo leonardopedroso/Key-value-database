@@ -28,17 +28,18 @@ int getStrFromStdin(char input[],int len){
 
     if(fgets(input,len,stdin)==NULL){
         printf("Error in getting input\n");
-        return 1;
+        return -1;
     }
     // If it does not find the new line character, it clears completely stdin
     if(memchr(input,'\n',len) == NULL){
         while(getchar() != '\n');
         
         printf("Input too large\n");
-        return 1;
+        return -1;
     }
     // so that the new line character is not confused with part of an argument
     // one of the args used as an auxiliary variable
+    // TODO
     aux = strchr(input, '\n');
     *aux = '\0';
 
@@ -48,7 +49,7 @@ int getStrFromStdin(char input[],int len){
 int getCommand(char **groupName){
     char input[MAX_INPUT];
     char *arg[2], *savePtr;
-    int nArgs = 0, aux = 0;
+    int nArgs = 0, aux = 0; //TODO
 
     memset(input,'\0',MAX_INPUT);
     *groupName = NULL;
@@ -67,37 +68,33 @@ int getCommand(char **groupName){
         return 0;
     } 
     else if(arg[1] == NULL){
-        nArgs = 1;
-    } 
-    else if(strtok_r(NULL,ARG_DELIM,&savePtr) == NULL){
-        nArgs = 2;
-    }
-    // if too many are given since all commands considered only take two args
-    else {
-        printf("Too many arguments\n");
-        return 0;
-    }
-
-    if(nArgs == 1){
+        // only one arg given
         if(strcmp(APPS_CMD,arg[0]) == 0){
             return APPS_DES;
         }
     } 
-    // nArgs can only be 2 so the second arg is the group name and must not be
-    // bigger than MAX_GROUP_ID
-    else if(strlen(arg[1]) <= MAX_GROUP_ID){
-        *groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char));
-        strcpy(*groupName,arg[1]);
+    else if(strtok_r(NULL,ARG_DELIM,&savePtr) == NULL){
+        // two args given
+        // the second arg is the group name and cannot be bigger than MAX_GROUP_ID
+        if(strlen(arg[1]) <= MAX_GROUP_ID){
+            *groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
+            strcpy(*groupName,arg[1]);
 
-        if(strcmp(CREATE_CMD,arg[0]) == 0){
-            return CREATE_DES;
-        } else if(strcmp(DELETE_CMD,arg[0]) == 0){
-            return DELETE_DES;
-        } else if(strcmp(GROUP_CMD,arg[0]) == 0){
-            return GROUP_DES;
+            if(strcmp(CREATE_CMD,arg[0]) == 0){
+                return CREATE_DES;
+            } else if(strcmp(DELETE_CMD,arg[0]) == 0){
+                return DELETE_DES;
+            } else if(strcmp(GROUP_CMD,arg[0]) == 0){
+                return GROUP_DES;
+            }
+        } else{
+            printf("Group name too large\n");
+            return 0;
         }
-    } else{
-        printf("Group name too large\n");
+    }
+    // if too many are given since all commands considered only take two args
+    else {
+        printf("Too many arguments\n");
         return 0;
     }
 
