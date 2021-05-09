@@ -24,7 +24,7 @@ void printMenu(void){
 // \param len length of the string to be taken from the keyboard
 // \return On success, returns 0 and, on error, returns -1
 int getStrFromStdin(char input[],int len){
-    char *aux;
+    memset(input,'\0',MAX_INPUT);
 
     if(fgets(input,len,stdin)==NULL){
         printf("Error in getting input\n");
@@ -37,11 +37,8 @@ int getStrFromStdin(char input[],int len){
         printf("Input too large\n");
         return -1;
     }
-    // so that the new line character is not confused with part of an argument
-    // one of the args used as an auxiliary variable
-    // TODO
-    aux = strchr(input, '\n');
-    *aux = '\0';
+    // the last char of input must be \n if MAX_INPUT is respected
+    input[strlen(input)-1] = '\0';
 
     return 0;
 }
@@ -49,9 +46,7 @@ int getStrFromStdin(char input[],int len){
 int getCommand(char **groupName){
     char input[MAX_INPUT];
     char *arg[2], *savePtr;
-    int nArgs = 0, aux = 0; //TODO
 
-    memset(input,'\0',MAX_INPUT);
     *groupName = NULL;
 
     if(getStrFromStdin(input,MAX_INPUT)){
