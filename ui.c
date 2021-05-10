@@ -2,7 +2,7 @@
 
 void printMenu(void){
     printf("Possible commands:\n");
-    printf("Group ID up to %d characters\n",MAX_GROUP_ID);
+    printf("Group ID up to %d characters\n",MAX_STR_LENGTH);
     printf("%s%s[<groupID>]\tCreates a new group with the group\n",CREATE_CMD,
         ARG_DELIM);
     printf("\t\t\tidentifier specified\n");
@@ -43,11 +43,11 @@ int getStrFromStdin(char input[],int len){
     return 0;
 }
 
-int getCommand(char **groupName){
+int getCommand(char *groupName){
     char input[MAX_INPUT];
     char *arg[2], *savePtr;
 
-    *groupName = NULL;
+    //*groupName = NULL;
 
     if(getStrFromStdin(input,MAX_INPUT)){
         return 0;
@@ -71,9 +71,9 @@ int getCommand(char **groupName){
     else if(strtok_r(NULL,ARG_DELIM,&savePtr) == NULL){
         // two args given
         // the second arg is the group name and cannot be bigger than MAX_GROUP_ID
-        if(strlen(arg[1]) <= MAX_GROUP_ID){
-            *groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
-            strcpy(*groupName,arg[1]);
+        if(strlen(arg[1]) <= MAX_STR_LENGTH){
+            //*groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
+            strcpy(groupName,arg[1]);
 
             if(strcmp(CREATE_CMD,arg[0]) == 0){
                 return CREATE_DES;

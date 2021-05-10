@@ -3,7 +3,6 @@
 
 int rcvQueryKVSLocalServer(int clientSock, int * msgId, char * str1, char * str2){
     // 1. Receive msg identification corresponding to authentication
-    // (no need to check msgId)
     if(read(clientSock,msgId,sizeof(int))<= 0){
         return RCV_QUERY_COM_ERROR;
     }
@@ -27,7 +26,7 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char * str1, char * str2
     if(read(clientSock,&strLen,sizeof(int))<= 0){
         return RCV_QUERY_COM_ERROR;
     }
-    // 4. Read first argument if it was sent
+    // 4. Read second argument if it was sent
     if(strLen != 0){
         int bytesToRead,nbytes; 
         bytesToRead = strLen;

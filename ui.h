@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// Maximum length of the group identifier excluding the terminator character
-#define MAX_GROUP_ID 30
+#include "KVS-lib-MACROS.h"
 
 // Create group command
 #define CREATE_CMD "create"
@@ -33,11 +31,11 @@ void printMenu(void);
 // Maximum input to be gotten from the keyboard
 // Must be higher than the sum of MAX_GROUP_ID and the lengths of each the
 // command and the delimiter
-#define MAX_INPUT MAX_GROUP_ID+20
+#define MAX_INPUT MAX_STR_LENGTH+20
 // \brief Gets a command from the user and, in case of error, explains it
 // \param groupName so that the function can communicate to the outside the 
 // name of the group it received
 // \return On error, returns 0 and, on success, a command descriptor
-int getCommand(char **groupName);
+int getCommand(char *groupName);
 
 #endif

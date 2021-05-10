@@ -1,14 +1,6 @@
-#include "KVSLocalServer.h"
-#include "KVSLocalServer-com.h"
-#include "KVS-lib-MACROS.h"
-
-
-// ---------- Global variables ----------
-CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
-GROUP * groups = NULL; // Pointer to the first element of the linked list of groups 
-
+#include "KVSLocalServer.h" // Header
+ 
 int main(){
-    
     // ---------- Setup server variables ----------
     int server_sock; // fd of rcv socket
     struct sockaddr_un server_sock_addr; // struct addr of sever socket
@@ -26,6 +18,8 @@ int main(){
     printf("Reception socket created\n");
     
     // ---------- Bind server socket ----------
+    // unlink server if last server session was not terminated properly
+    unlink(KVS_LOCAL_SERVER_ADDR); 
     strcpy(server_sock_addr.sun_path, KVS_LOCAL_SERVER_ADDR); // set socket to known address
     // Catch error binding socket to address
     if( bind(server_sock, (struct sockaddr *) &server_sock_addr, sizeof(struct sockaddr_un)) == -1){
@@ -46,16 +40,54 @@ int main(){
     pthread_t serverThread;
     pthread_create(&serverThread, NULL, &KVSLocalServerThread, &server_sock);
 
-
-    // [ADD SERVER CONSOLE BELOW]
-    while(1){}
-
-
+    // ---------- Server console ----------
+    // Allocate buffer 
+    // Maximum size is used just here, so that it not necessary to do mallocs inside ui files
+    // The corresponding frees would have to be done outside the allocating files 
+    // So we chose clear code over messy code with slightly less memory needs
+    char group[MAX_STR_LENGTH];
+    // Print menu once
+    printMenu();
+    // Wait for commands in console user interface
+    while(1){
+        switch(getCommand(&group[0])){
+            case CREATE_DES:
+                switch(groupAdd(&group[0])){
+                    case GROUP_OK:
+                        printf("Created group %s with secret __\n",group);
+                        break;
+                }
+                // [COMMUNICATE WITH AUTH SERVER]
+                // generateSecret();
+                // brodcastSecret();
+                break;
+            case DELETE_DES:
+                switch(groupDelete(&group[0])){
+                    case GROUP_OK:
+                        printf("Deleted group %s\n\n",group);
+                        break;
+                }
+                break;
+            case GROUP_DES:
+                switch(groupShow(&group[0])){
+                    case GROUP_OK:
+                        printf("Showing group %s\n\n",group);
+                        break;
+                }
+                break;
+            case APPS_DES:
+                clientShow();
+                break;
+            default: // Invalid command
+                printf("\n");
+                printMenu(); // Print menu again
+                break;
+        }
+    }
     exit(0);
-
 }
 
-// ---------- KVS Server thread functions ----------
+// ---------- KVS Server thread function ----------
 
 void * KVSLocalServerThread(void * server_sock){
     // Variable to hold new socket when a new client connects
@@ -72,87 +104,13 @@ void * KVSLocalServerThread(void * server_sock){
         }
         // Add client and handle it in a new thread
         // Catch errors handling new client
-        if( handleClient(clientSocket) <0 ){
+        if(clientHandle(clientSocket) <0 ){
             printf("Error handling new client.\n");
             break;
         }
         printf("Accepted new connection.\n");
     }
-    closeClients(); // Close connections to the clients, join repective threads, and free memory
+    //[Handle client disconnections]
+    //closeClients(); // Close connections to the clients, join repective threads, and free memory
     pthread_exit(NULL); // Close KVSServerThread
 }
-
-void * KVSLocalServerClientThread(void * client){
-    
-    // Allocate buffers
-    char buffer1[MAX_STR_LENGTH];
-    int buffer1Len;
-    char buffer2[MAX_STR_LENGTH];
-    int buffer2Len;
-    int msgId = 0;
-
-    // ---------- Authenticate client ----------
-    rcvQueryKVSLocalServer(((CLIENT * ) client)->clientSocket, &msgId, &buffer1[0], &buffer1[0]);
-    // [check authentication]
-    ansQueryKVSLocalServer(((CLIENT * ) client)->clientSocket,STATUS_OK,NULL);
-    printf("Response sent\n");
-
-    pthread_exit(NULL); // Close KVSServerThread
-}
-
-// ---------- Server and client mangement prototypes ----------
-
-int handleClient(int clientSocket){
-    // ---------- Allocate memory to new client ----------
-    CLIENT * newClient = (CLIENT *) malloc(sizeof(CLIENT));
-    // Catch allocation error 
-    if(newClient == NULL){
-        perror("Error alocating memory to new client");
-        return ERROR_CLIENT_ALLOCATION;
-    }
-
-    // ---------- Add new client block to the linked list ----------
-    // [ISTO TEM DE ENTARR NA função manageClients]
-    // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO] 
-    // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
-    CLIENT * searchPointer = clients;
-    if(searchPointer == NULL){
-        clients = newClient;
-    }else{
-        // Iterate through the clients until the last, whcih does not point to other CLIENT block
-        while(searchPointer->prox != NULL){
-            searchPointer = searchPointer->prox;
-        }
-        searchPointer->prox = newClient;
-    }
-
-    // ---------- Handle client in new thread ----------
-    newClient->clientSocket = clientSocket;
-    pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, (void *) newClient);
-
-    return SUCCESS_CLIENT_HANDLE;
-}
-
-
-void closeClients(){
-    // ---------- Remove client block to the linked list ----------
-    // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO]
-    CLIENT * searchPointer = clients;
-    CLIENT * searchPointerPrev;
-    // Check if pointer to the linked list is NULL (i.e. there are no connected clients)
-    if(searchPointer == NULL){
-       return;
-    }
-    // Iterate through the clients closing, joining, and freeing memory
-    while(searchPointer != NULL){
-        searchPointerPrev = searchPointer;
-        searchPointer = searchPointer->prox;
-        // Close socket 
-        close(searchPointerPrev->clientSocket);
-        // Wait for client thread
-        pthread_join(searchPointerPrev->clientThread, NULL);
-        // Free memory allocated for client
-        free(searchPointerPrev);
-    }
-}
-

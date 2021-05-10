@@ -1,0 +1,5 @@
+1. Talvez criar um logger do servidor que escreve status num txt
+ e depois abre-se um terminal para ir vendo o que esta a acontecer com
+ watch -n 1 tail logger.txt
+ 2. Adicionar um comando na ui de shutdown
+ 3. segredos de comprimentpo aleatoruio i.e. entre 1 e MAX_STR_LEn

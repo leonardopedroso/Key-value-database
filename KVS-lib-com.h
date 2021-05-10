@@ -10,6 +10,7 @@
 
 #include "KVS-lib-MACROS.h"
 
+#define QUERY_ERROR_DISCONNECTED_SOCK -1
 #define QUERY_COM_ERROR -100
 int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3);
 
