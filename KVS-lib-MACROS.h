@@ -7,6 +7,7 @@
 #define MSG_ID_GET_VAL 2
 #define MSG_ID_DEL_VAL 3
 #define MSG_ID_REG_CB 4
+#define MSG_ID_CLOSE_CONN 5
 
 // ---------- Query status ----------
 #define STATUS_OK 0

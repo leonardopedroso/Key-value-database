@@ -83,7 +83,6 @@ void * KVSLocalServerThread(void * server_sock){
 }
 
 void * KVSLocalServerClientThread(void * client){
-    
     // Allocate buffers
     char buffer1[MAX_STR_LENGTH];
     int buffer1Len;
@@ -92,11 +91,54 @@ void * KVSLocalServerClientThread(void * client){
     int msgId = 0;
 
     // ---------- Authenticate client ----------
-    rcvQueryKVSLocalServer(((CLIENT * ) client)->clientSocket, &msgId, &buffer1[0], &buffer1[0]);
-    // [check authentication]
-    ansQueryKVSLocalServer(((CLIENT * ) client)->clientSocket,STATUS_OK,NULL);
-    printf("Response sent\n");
+    if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0])
+    == RCV_QUERY_COM_ERROR){
+        //[HANDLE UNCONTROLLED DISCONNECTION]
+        pthread_exit(NULL); // Close KVSServerThread
+    }
+    // PID 
+    ((CLIENT *)client)->PID = msgId;    
+    // [CHECK AUTHENTICATION AUTH SERVER]
+    // switch(authenticated)
+    // case OK:
+        printf("%s\n",buffer1);
+        printf("%s\n",buffer2);
+        ((CLIENT *)client)->connectivityStatus = CONN_STATUS_CONNECTED;
+        ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,STATUS_OK,NULL);
 
+    // Loop receiving and hadling queries
+    while(1){
+        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0])
+        == RCV_QUERY_COM_ERROR){
+            //[HANDLE UNCONTROLLED DISCONNECTION]
+            pthread_exit(NULL); // Close KVSServerThread
+        }
+        switch(msgId){
+        case MSG_ID_ESTBL_CONN:
+
+            break;
+        case MSG_ID_PUT_VAL:
+        
+            break;
+        case MSG_ID_GET_VAL:
+        
+            break;
+        case MSG_ID_DEL_VAL:
+        
+            break;
+        case MSG_ID_REG_CB:
+        
+            break;
+        case MSG_ID_CLOSE_CONN:
+        
+            break;
+        
+        default:
+            break;
+        }
+
+    }
+    //[HANDLE UNCONTROLLED DISCONNECTION]
     pthread_exit(NULL); // Close KVSServerThread
 }
 
@@ -110,10 +152,25 @@ int handleClient(int clientSocket){
         perror("Error alocating memory to new client");
         return ERROR_CLIENT_ALLOCATION;
     }
+    // Store socket for communication with this client
+    newClient->clientSocket = clientSocket;
+    // Define connectivity status of client
+    newClient->connectivityStatus = CONN_STATUS_NOT_AUTH;
+    // Define connection time
+    if(clock_gettime(CLOCK_REALTIME, &(newClient->connTime)) == -1 ) {
+        perror( "Clock gettime error" );
+        // Time is not critical so exit is overkill
+    }
+    // Add client to client list
+    clientAdd(newClient);
+    // ---------- Handle client in new thread ----------
+    pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, (void *) newClient);
+    return SUCCESS_CLIENT_HANDLE;
+}
 
+void clientAdd(CLIENT * newClient){
+    // [IN MUTEX client region]
     // ---------- Add new client block to the linked list ----------
-    // [ISTO TEM DE ENTARR NA função manageClients]
-    // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO] 
     // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
     CLIENT * searchPointer = clients;
     if(searchPointer == NULL){
@@ -125,12 +182,7 @@ int handleClient(int clientSocket){
         }
         searchPointer->prox = newClient;
     }
-
-    // ---------- Handle client in new thread ----------
-    newClient->clientSocket = clientSocket;
-    pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, (void *) newClient);
-
-    return SUCCESS_CLIENT_HANDLE;
+    // [OUT MUTEX client region]
 }
 
 

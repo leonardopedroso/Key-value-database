@@ -21,7 +21,7 @@ int establish_connection (char * group_id, char * secret){
         perror("Error connecting to server");
         return ESTBL_CONN_CONNECTION_SERVER;
     }
-    switch (queryKVSLocalServer(MSG_ID_ESTBL_CONN,group_id, secret, NULL)){
+    switch (queryKVSLocalServer(getpid(),group_id, secret, NULL)){
         case STATUS_OK:
             return ESTBL_CONN_SUCCESS;
         case STATUS_ACCSS_DENIED:
@@ -31,14 +31,4 @@ int establish_connection (char * group_id, char * secret){
         default:
             return ESTBL_CONN_COM_SERVER;
     }
-
-    // [FIQUEI AQUI - LEO]
-    // AGORA É PRECISO FAZER O HANDSHAKE:
-    // 1. MANDAR GRUPO e SEGREDO
-    // 2. RECEBER OK OU ACESSO NEGADO
-
-    // ERRORS:
-    // i) CREATING SOCKET
-    // ii) CONNECTING TO SERVER 
-    // ii) ...
 }

@@ -11,13 +11,10 @@ int main(){
     if(establish_connection(a,b) == ESTBL_CONN_SUCCESS){
         printf("Established connection.\n");
     }
-
-    while (1)
-    {
+    
+    while (1){
         /* code */
     }
     
-
-    sleep(2);
     exit(0);
 }

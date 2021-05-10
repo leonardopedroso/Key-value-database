@@ -18,5 +18,8 @@
 #define ESTBL_CONN_COM_SERVER -102
 int establish_connection (char * group_id, char * secret);
 
+#define CLOSE_CONN_SUCCESS 1
+int close_connection();
+
 
 #endif
