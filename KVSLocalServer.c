@@ -1,6 +1,7 @@
-#include "KVSLocalServer.h"
-#include "KVSLocalServer-com.h"
-#include "KVS-lib-MACROS.h"
+#include "KVSLocalServer.h" // Header
+#include "KVSLocalServer-com.h" // Local communication functions 
+#include "KVS-lib-MACROS.h" // Shared MACROS
+#include "ui.h" // User interface
 
 
 // ---------- Global variables ----------
@@ -48,13 +49,38 @@ int main(){
     pthread_t serverThread;
     pthread_create(&serverThread, NULL, &KVSLocalServerThread, &server_sock);
 
+    // ---------- Server console ----------
+    // Allocate pointers to argument
+    char *group = NULL;
+    // Print menu once
+    printMenu();
+    // Wait for commands in console user interface
+    while(1){
+        switch(getCommand(&group)){
+            case CREATE_DES:
 
-    // [ADD SERVER CONSOLE BELOW]
-    while(1){}
-
-
+                //secret = (char *) calloc(10,sizeof(char));
+                //strcpy(secret,"Ola"); // TODO
+                //printf("Created group %s with secret %s\n\n",groupName,secret);
+                //free(secret);
+                break;
+            case DELETE_DES:
+                // deleteGroup(groupList);
+                printf("Deleted group %s\n\n",group);
+                break;
+            case GROUP_DES:
+                printf("Showing group %s\n\n",group);
+                break;
+            case APPS_DES:
+                printf("Showing apps\n\n");
+                break;
+            default:
+                printf("\n");
+                printMenu();
+                break;
+        }
+    }
     exit(0);
-
 }
 
 // ---------- KVS Server thread functions ----------

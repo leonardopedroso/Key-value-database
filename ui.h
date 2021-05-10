@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// Maximum length of the group identifier excluding the terminator character
-#define MAX_GROUP_ID 30
+#include "KVS-lib-MACROS.h"
 
 // Create group command
 #define CREATE_CMD "create"

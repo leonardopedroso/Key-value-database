@@ -3,11 +3,11 @@
 
 int main(void){
     char *groupName = NULL;
-    int action;
+    int action; // Leo: no need of this
     char *secret = NULL;
 
     printMenu();
-
+ 
     while(1){
         switch(getCommand(&groupName)){
             case CREATE_DES:

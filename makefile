@@ -20,8 +20,11 @@ client: client.o KVS-lib.o KVS-lib-com.o
 KVSLocalServer-com.o: KVSLocalServer-com.c KVSLocalServer-com.h KVS-lib-MACROS.h
 	gcc -c KVSLocalServer-com.c
 
+ui.o: ui.c ui.h
+	gcc -c ui.c
+
 KVSLocalServer.o: KVSLocalServer.c KVSLocalServer.h KVS-lib-MACROS.h
 	gcc -c KVSLocalServer.c
 
-KVSLocalServer: KVSLocalServer.o KVSLocalServer-com.o
-	gcc KVSLocalServer.o KVSLocalServer-com.o -o KVSLocalServer
+KVSLocalServer: KVSLocalServer.o KVSLocalServer-com.o ui.o
+	gcc KVSLocalServer.o KVSLocalServer-com.o ui.o -o KVSLocalServer
