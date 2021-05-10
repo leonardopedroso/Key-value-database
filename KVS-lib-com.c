@@ -5,6 +5,7 @@ int clientSock; // client socket
 struct sockaddr_un server_sock_addr; // server socket address
 
 int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
+    // [IN MUTEX com region]
     // Protocol for communication with server:
     // 1. Write message identification
     if(write(clientSock,&msgId,sizeof(int))<=0){
@@ -63,5 +64,6 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
             }
         }
     }
+    // [OUT MUTEX com region]
     return status;
 }

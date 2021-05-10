@@ -5,15 +5,16 @@
 
 int main(){
 
+    printf("PID: %d\n",getpid());
+
     char a[10] = "ab";
     char b[10] = "cd";
-
-    if(establish_connection(NULL,NULL) == ESTBL_CONN_SUCCESS){
+    if(establish_connection(a,b) == ESTBL_CONN_SUCCESS){
         printf("Established connection.\n");
     }
 
     while (1){
-        /* code */
+        sleep(2);
     }
     
     exit(0);

@@ -1,0 +1,3 @@
+Talvez criar um logger do servidor que escreve status num txt
+ e depois abre-se um terminal para ir vendo o que esta a acontecer com
+ watch -n 1 tail logger.txt

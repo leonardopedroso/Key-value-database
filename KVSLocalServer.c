@@ -72,7 +72,7 @@ void * KVSLocalServerThread(void * server_sock){
         }
         // Add client and handle it in a new thread
         // Catch errors handling new client
-        if( handleClient(clientSocket) <0 ){
+        if(clientHandle(clientSocket) <0 ){
             printf("Error handling new client.\n");
             break;
         }
@@ -89,52 +89,46 @@ void * KVSLocalServerClientThread(void * client){
     char buffer2[MAX_STR_LENGTH];
     int buffer2Len;
     int msgId = 0;
-
-    // ---------- Authenticate client ----------
-    if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0])
-    == RCV_QUERY_COM_ERROR){
-        //[HANDLE UNCONTROLLED DISCONNECTION]
-        pthread_exit(NULL); // Close KVSServerThread
-    }
-    // PID 
-    ((CLIENT *)client)->PID = msgId;    
-    // [CHECK AUTHENTICATION AUTH SERVER]
-    // switch(authenticated)
-    // case OK:
-        printf("%s\n",buffer1);
-        printf("%s\n",buffer2);
-        ((CLIENT *)client)->connectivityStatus = CONN_STATUS_CONNECTED;
-        ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,STATUS_OK,NULL);
-
-    // Loop receiving and hadling queries
+    
+    // Loop receiving and handling queries
     while(1){
-        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0])
-        == RCV_QUERY_COM_ERROR){
+        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0]) == RCV_QUERY_COM_ERROR){
             //[HANDLE UNCONTROLLED DISCONNECTION]
             pthread_exit(NULL); // Close KVSServerThread
         }
+        // ---------- Authenticate client ----------
+        if(msgId >= MSG_ID_ESTBL_CONN){
+            // Define client PID
+            ((CLIENT *)client)->PID = msgId;
+            // Output to msgId just to avoid allocating another variable
+            msgId = clientAuth(((CLIENT *)client));
+            ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
+            printf("Client authenticated.\n");
+            printf("Group: %s\n",buffer1);
+            printf("Secret: %s\n",buffer2);
+            printf("PID: %d\n",((CLIENT *)client)->PID);
+            continue;
+        }
         switch(msgId){
-        case MSG_ID_ESTBL_CONN:
-
-            break;
-        case MSG_ID_PUT_VAL:
+            case MSG_ID_PUT_VAL:
         
-            break;
-        case MSG_ID_GET_VAL:
+                break;
+            case MSG_ID_GET_VAL:
         
-            break;
-        case MSG_ID_DEL_VAL:
+                break;
+            case MSG_ID_DEL_VAL:
         
-            break;
-        case MSG_ID_REG_CB:
+                break;
+            case MSG_ID_REG_CB:
         
-            break;
-        case MSG_ID_CLOSE_CONN:
-        
-            break;
-        
-        default:
-            break;
+                break;
+            // ---------- Close client connection----------
+            case MSG_ID_CLOSE_CONN:
+                //[HANDLE CONTROLLED DISCONNECTION]
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,STATUS_OK,NULL);
+                break;
+            default:
+                break;
         }
 
     }
@@ -144,7 +138,7 @@ void * KVSLocalServerClientThread(void * client){
 
 // ---------- Server and client mangement prototypes ----------
 
-int handleClient(int clientSocket){
+int clientHandle(int clientSocket){
     // ---------- Allocate memory to new client ----------
     CLIENT * newClient = (CLIENT *) malloc(sizeof(CLIENT));
     // Catch allocation error 
@@ -158,7 +152,7 @@ int handleClient(int clientSocket){
     newClient->connectivityStatus = CONN_STATUS_NOT_AUTH;
     // Define connection time
     if(clock_gettime(CLOCK_REALTIME, &(newClient->connTime)) == -1 ) {
-        perror( "Clock gettime error" );
+        perror("Clock gettime error");
         // Time is not critical so exit is overkill
     }
     // Add client to client list
@@ -185,6 +179,14 @@ void clientAdd(CLIENT * newClient){
     // [OUT MUTEX client region]
 }
 
+int clientAuth(CLIENT * client){
+    // [CHECK AUTHENTICATION AUTH SERVER]
+    // switch(authenticated)
+    // case OK:
+        client->connectivityStatus = CONN_STATUS_CONNECTED;
+        // return query status
+        return STATUS_OK;
+}
 
 // REDO BELOW
 void closeClients(){
