@@ -186,6 +186,7 @@ void clientAdd(CLIENT * newClient){
 }
 
 
+// REDO BELOW
 void closeClients(){
     // ---------- Remove client block to the linked list ----------
     // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO]

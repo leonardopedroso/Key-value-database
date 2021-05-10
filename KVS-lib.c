@@ -19,7 +19,7 @@ int establish_connection (char * group_id, char * secret){
     strcpy(server_sock_addr.sun_path, KVS_LOCAL_SERVER_ADDR);
     if(connect(clientSock, (struct sockaddr *) &server_sock_addr, sizeof(struct sockaddr_un)) == -1){
         perror("Error connecting to server");
-        return ESTBL_CONN_CONNECTION_SERVER;
+        return ESTBL_CONN_ERROR_CONNECTION_SERVER;
     }
     switch (queryKVSLocalServer(getpid(),group_id, secret, NULL)){
         case STATUS_OK:
@@ -27,8 +27,19 @@ int establish_connection (char * group_id, char * secret){
         case STATUS_ACCSS_DENIED:
             return ESTBL_CONN_ACCSS_DENIED;
         case QUERY_COM_ERROR:
-            return ESTBL_CONN_COM_SERVER;
+            return ESTBL_CONN_ERROR_COM_SERVER;
         default:
-            return ESTBL_CONN_COM_SERVER;
+            return ESTBL_CONN_ERROR_COM_SERVER;
+    }
+}
+
+int close_connection(){
+    switch (queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL, NULL)){
+        case STATUS_OK:
+            return CLOSE_CONN_SUCCESS; 
+        case QUERY_COM_ERROR:
+            return CLOSE_CONN_ERROR_COM_SERVER;
+        default:
+            return CLOSE_CONN_ERROR_COM_SERVER;
     }
 }
