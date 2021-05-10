@@ -1,11 +1,15 @@
 #include "KVS-lib-com.h"
 
 // ---------- Global variables ----------
-int clientSock; // client socket
+int clientSock = DISCONNECTED_SOCKET; // client socket
 struct sockaddr_un server_sock_addr; // server socket address
 
 int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
     // [IN MUTEX com region]
+    // Check if socket has been connected
+    if(clientSock == DISCONNECTED_SOCKET){
+        return QUERY_ERROR_DISCONNECTED_SOCK;
+    }
     // Protocol for communication with server:
     // 1. Write message identification
     if(write(clientSock,&msgId,sizeof(int))<=0){
@@ -63,6 +67,10 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
                 bytesToRead -= nbytes;
             }
         }
+    }
+    if(msgId == MSG_ID_CLOSE_CONN){
+        close(clientSock);
+        clientSock = DISCONNECTED_SOCKET;
     }
     // [OUT MUTEX com region]
     return status;

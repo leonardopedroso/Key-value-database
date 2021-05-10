@@ -13,6 +13,10 @@ int main(){
         printf("Established connection.\n");
     }
 
+    /*if(close_connection() == CLOSE_CONN_SUCCESS){
+        printf("Close connection succssefull.\n");
+    }*/
+
     while (1){
         sleep(2);
     }

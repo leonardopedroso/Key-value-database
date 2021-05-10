@@ -13,6 +13,9 @@
 #define STATUS_OK 0
 #define STATUS_ACCSS_DENIED -1
 
+// ---------- Connectivity ----------
+#define DISCONNECTED_SOCKET -1
+
 // ---------- Data management ----------
 // [POR ENQUANTO ESTAMOS A ETABELECER UM LIMITE DE CARACTERES MAS 
 // PODE-SE NA BOA ALOCAR DINAMICAMENTE SEM LIMITE SE QUISERMOS DEPOIS]

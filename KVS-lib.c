@@ -34,11 +34,18 @@ int establish_connection (char * group_id, char * secret){
 }
 
 int close_connection(){
-    switch (queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL, NULL)){
+    // Send disconnection request
+    int status = queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL, NULL);
+    // Even if communication with the server is not possible connection is closed
+    // The only way an error arises is if the server is either disconnected or 
+    // unable to answer the query
+    
+    clientSock = DISCONNECTED_SOCKET;
+    switch(status){
         case STATUS_OK:
             return CLOSE_CONN_SUCCESS; 
-        case QUERY_COM_ERROR:
-            return CLOSE_CONN_ERROR_COM_SERVER;
+        case QUERY_ERROR_DISCONNECTED_SOCK:
+            return CLOSE_CONN_ERROR_DISCONNECTED_SOCK;
         default:
             return CLOSE_CONN_ERROR_COM_SERVER;
     }

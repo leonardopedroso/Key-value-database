@@ -35,9 +35,11 @@ void * KVSLocalServerClientThread(void * clientSocket);
 #define ERROR_CLIENT_ALLOCATION -1
 int clientHandle(int sockClient);
 
-void clientAdd(CLIENT * newclient);
+void clientAdd(CLIENT * client);
 
 int clientAuth(CLIENT * client);
+
+int clientDisconnect(CLIENT * client);
 // [IMPLEMENT manageClients to avoid synch problems]
 // [TODAS AS ACOES QUE ALTEREM A MEMORIA DA LISTA DE CLIENTES TEM DE PASSAR PELA FUNÇAO manageClients]
 //void manageClients(int action,...)

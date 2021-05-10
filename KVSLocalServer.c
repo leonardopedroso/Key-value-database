@@ -26,6 +26,8 @@ int main(){
     printf("Reception socket created\n");
     
     // ---------- Bind server socket ----------
+    // unlink server if last server session was not terminated properly
+    unlink(KVS_LOCAL_SERVER_ADDR); 
     strcpy(server_sock_addr.sun_path, KVS_LOCAL_SERVER_ADDR); // set socket to known address
     // Catch error binding socket to address
     if( bind(server_sock, (struct sockaddr *) &server_sock_addr, sizeof(struct sockaddr_un)) == -1){
@@ -93,7 +95,9 @@ void * KVSLocalServerClientThread(void * client){
     // Loop receiving and handling queries
     while(1){
         if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0]) == RCV_QUERY_COM_ERROR){
-            //[HANDLE UNCONTROLLED DISCONNECTION]
+            // [CUIDADO QUANDO TIVER O CALLBACK]
+            printf("Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
+            close(((CLIENT *)client)->clientSocket);
             pthread_exit(NULL); // Close KVSServerThread
         }
         // ---------- Authenticate client ----------
@@ -103,10 +107,7 @@ void * KVSLocalServerClientThread(void * client){
             // Output to msgId just to avoid allocating another variable
             msgId = clientAuth(((CLIENT *)client));
             ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
-            printf("Client authenticated.\n");
-            printf("Group: %s\n",buffer1);
-            printf("Secret: %s\n",buffer2);
-            printf("PID: %d\n",((CLIENT *)client)->PID);
+            printf("Client authenticated | Group: %s | Secret: %s | PID: %d\n", buffer1,buffer2,((CLIENT *)client)->PID);
             continue;
         }
         switch(msgId){
@@ -124,16 +125,18 @@ void * KVSLocalServerClientThread(void * client){
                 break;
             // ---------- Close client connection----------
             case MSG_ID_CLOSE_CONN:
-                //[HANDLE CONTROLLED DISCONNECTION]
-                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,STATUS_OK,NULL);
+                // Commanded disconnection
+                msgId = clientDisconnect(client);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
+                // [CUIDADO QUANDO TIVER O CALLBACK]
+                close(((CLIENT *)client)->clientSocket);
+                pthread_exit(NULL); // Close KVSServerThread
                 break;
             default:
                 break;
         }
 
     }
-    //[HANDLE UNCONTROLLED DISCONNECTION]
-    pthread_exit(NULL); // Close KVSServerThread
 }
 
 // ---------- Server and client mangement prototypes ----------
@@ -162,19 +165,19 @@ int clientHandle(int clientSocket){
     return SUCCESS_CLIENT_HANDLE;
 }
 
-void clientAdd(CLIENT * newClient){
+void clientAdd(CLIENT * client){
     // [IN MUTEX client region]
     // ---------- Add new client block to the linked list ----------
     // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
     CLIENT * searchPointer = clients;
     if(searchPointer == NULL){
-        clients = newClient;
+        clients = client;
     }else{
         // Iterate through the clients until the last, whcih does not point to other CLIENT block
         while(searchPointer->prox != NULL){
             searchPointer = searchPointer->prox;
         }
-        searchPointer->prox = newClient;
+        searchPointer->prox = client;
     }
     // [OUT MUTEX client region]
 }
@@ -186,6 +189,18 @@ int clientAuth(CLIENT * client){
         client->connectivityStatus = CONN_STATUS_CONNECTED;
         // return query status
         return STATUS_OK;
+}
+
+int clientDisconnect(CLIENT * client){
+    // Set connectivity status
+    client->connectivityStatus = CONN_STATUS_DISCONNECTED;
+    // Define disconnection time
+    if(clock_gettime(CLOCK_REALTIME, &(client->connTime)) == -1 ) {
+        perror("Clock gettime error");
+        // Time is not critical so exit is overkill
+    }
+    printf("Commanded disconnection of PID: %d\n",client->PID);
+    return STATUS_OK;
 }
 
 // REDO BELOW

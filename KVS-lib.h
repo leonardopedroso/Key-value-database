@@ -19,6 +19,7 @@
 int establish_connection (char * group_id, char * secret);
 
 #define CLOSE_CONN_SUCCESS 1
+#define CLOSE_CONN_ERROR_DISCONNECTED_SOCK -1
 #define CLOSE_CONN_ERROR_COM_SERVER -100
 int close_connection();
 
