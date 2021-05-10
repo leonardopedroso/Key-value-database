@@ -36,6 +36,6 @@ void printMenu(void);
 // \param groupName so that the function can communicate to the outside the 
 // name of the group it received
 // \return On error, returns 0 and, on success, a command descriptor
-int getCommand(char **groupName);
+int getCommand(char *groupName);
 
 #endif

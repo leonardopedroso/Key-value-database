@@ -43,11 +43,11 @@ int getStrFromStdin(char input[],int len){
     return 0;
 }
 
-int getCommand(char **groupName){
+int getCommand(char *groupName){
     char input[MAX_INPUT];
     char *arg[2], *savePtr;
 
-    *groupName = NULL;
+    //*groupName = NULL;
 
     if(getStrFromStdin(input,MAX_INPUT)){
         return 0;
@@ -73,7 +73,7 @@ int getCommand(char **groupName){
         // the second arg is the group name and cannot be bigger than MAX_GROUP_ID
         if(strlen(arg[1]) <= MAX_STR_LENGTH){
             //*groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
-            strcpy(*groupName,arg[1]);
+            strcpy(groupName,arg[1]);
 
             if(strcmp(CREATE_CMD,arg[0]) == 0){
                 return CREATE_DES;
