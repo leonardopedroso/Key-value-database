@@ -24,7 +24,7 @@ void printMenu(void){
 // \param len length of the string to be taken from the keyboard
 // \return On success, returns 0 and, on error, returns -1
 int getStrFromStdin(char input[],int len){
-    memset(input,'\0',MAX_STR_LENGTH);
+    memset(input,'\0',MAX_INPUT);
 
     if(fgets(input,len,stdin)==NULL){
         printf("Error in getting input\n");
@@ -44,12 +44,12 @@ int getStrFromStdin(char input[],int len){
 }
 
 int getCommand(char **groupName){
-    char input[MAX_STR_LENGTH];
+    char input[MAX_INPUT];
     char *arg[2], *savePtr;
 
     *groupName = NULL;
 
-    if(getStrFromStdin(input,MAX_STR_LENGTH)){
+    if(getStrFromStdin(input,MAX_INPUT)){
         return 0;
     }
 
@@ -72,7 +72,7 @@ int getCommand(char **groupName){
         // two args given
         // the second arg is the group name and cannot be bigger than MAX_GROUP_ID
         if(strlen(arg[1]) <= MAX_STR_LENGTH){
-            *groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
+            //*groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
             strcpy(*groupName,arg[1]);
 
             if(strcmp(CREATE_CMD,arg[0]) == 0){

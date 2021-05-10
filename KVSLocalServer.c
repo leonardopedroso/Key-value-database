@@ -50,22 +50,28 @@ int main(){
     pthread_create(&serverThread, NULL, &KVSLocalServerThread, &server_sock);
 
     // ---------- Server console ----------
-    // Allocate pointers to argument
-    char *group = NULL;
+    // Allocate buffer 
+    // Maximum size is used just here, so that it not necessary to do mallocs inside ui files
+    // The corresponding frees would have to be done outside the allocating files 
+    // So we chose clear code over messy code with slightly less memory needs
+    char group[MAX_STR_LENGTH];
     // Print menu once
     printMenu();
     // Wait for commands in console user interface
     while(1){
-        switch(getCommand(&group)){
+        switch(getCommand(&group[0])){
             case CREATE_DES:
-
-                //secret = (char *) calloc(10,sizeof(char));
-                //strcpy(secret,"Ola"); // TODO
-                //printf("Created group %s with secret %s\n\n",groupName,secret);
-                //free(secret);
+                printf("Created group %s with secret __\n",group);
+                groupAdd(&group[0]);
+                // [COMMUNICATE WITH AUTH SERVER]
+                // generateSecret();
+                // BrodcastSecret();
                 break;
             case DELETE_DES:
-                // deleteGroup(groupList);
+                switch(groupDelete(&group[0])){
+                    case 1:
+                        break;
+                }
                 printf("Deleted group %s\n\n",group);
                 break;
             case GROUP_DES:
