@@ -14,6 +14,8 @@
 #define GROUP_CMD "group"
 // Show application status command
 #define APPS_CMD "apps"
+// Exit command
+#define EXIT_CMD "exit"
 // Arguments delimiter
 #define ARG_DELIM " "
 // Create group descriptor
@@ -24,6 +26,8 @@
 #define GROUP_DES 3
 // Show application status descriptor
 #define APPS_DES 4
+// Exit descriptor
+#define EXIT_DES 5
 
 // \brief Prints the various commands of the menu of the user interface
 void printMenu(void);

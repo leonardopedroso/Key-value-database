@@ -1,5 +1,14 @@
 1. Talvez criar um logger do servidor que escreve status num txt
  e depois abre-se um terminal para ir vendo o que esta a acontecer com
  watch -n 1 tail logger.txt
- 2. Adicionar um comando na ui de shutdown
+ 2. Adicionar um comandos na ui:
+ i) shutdown
+ ii) mostrar todos os grupos (só id e number of entries)
+ iii) flag -c em apps para só mostar as conectadas (se der muito trabalho cagamos)
  3. segredos de comprimentpo aleatoruio i.e. entre 1 e MAX_STR_LEn
+ 4. diferentes client do auth server podem ter grupos com o mesmo nome
+ aasim os grupos tem de ser guardados com o pid do servidor. 
+ 5. O que faxer em caso de perda de synch com auth -> há 2 casos de perda de synch co auth
+ 6. 1  (KVS desliga e liga) -> temos de discutir (talvez ter um garbage collector no auth server)
+ 7. KVS auth liga e desliga regenerar keys e imprimir no terminal (quem tinha cesso continua com acesso)
+ 8. trocar na ui group ____ para show _____ que taL?
