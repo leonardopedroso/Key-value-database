@@ -176,3 +176,21 @@ int groupShow(char * groupId){
     free(secret); // Free allocated memory
     return GROUP_OK;
 }
+
+void groupClear(){
+    // Allocate pointer to group list
+    GROUP * prev = NULL;
+    GROUP * searchPointer = groups;
+    // Iterate through all groups
+    while(searchPointer != NULL){
+        // Check next element on the list
+        prev = searchPointer;
+        searchPointer = searchPointer->prox;
+        //[MUTEX IN REGION ENTRIES]
+        entriesDelete(prev); // delete entries of group
+        free(prev->id); // delete group id of group
+        free(prev); // delete group block
+        //[MUTEX OUT REGION ENTRIES]
+    }
+    printf("Cleared all groups.\n");
+}

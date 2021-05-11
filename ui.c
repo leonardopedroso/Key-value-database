@@ -3,7 +3,7 @@
 void printMenu(void){
     printf("\n");
     printf("Possible commands:\n");
-    printf("Group ID up to %d characters\n",MAX_STR_LENGTH);
+    printf("Group id up to %d characters\n",MAX_STR_LENGTH);
     printf("%s%s[<groupID>]\tCreates a new group with the group\n",CREATE_CMD,
         ARG_DELIM);
     printf("\t\t\tidentifier specified\n");
@@ -16,6 +16,8 @@ void printMenu(void){
         APPS_CMD);
     printf("\t\t\tprinting their PID, connection establishing time and\n");
     printf("\t\t\tconnection close time (if not currently connected\n");
+    printf("%s\t\t\tControlled shutdown of KVS local server\n",
+        EXIT_CMD);
 }
 
 // \brief Gets a string from the keyboard, handles the errors and prints them

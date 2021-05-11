@@ -1,4 +1,7 @@
 #include "KVSLocalServer.h" // Header
+
+// ---------- Global variables ----------
+int flagShutDown = RUNNING; // set to one if receives shutdown command 
  
 int main(){
     // ---------- Setup server variables ----------
@@ -111,12 +114,36 @@ int main(){
             case APPS_DES:
                 clientShow();
                 break;
+            case EXIT_DES:
+                flagShutDown = 1; // Set shutdown flag
+                break;
             default: // Invalid command
                 printMenu(); // Print menu again
                 break;
         }
+        if(flagShutDown)break; // handle shut down
     }
+    // ---------- Shutdown procedure ----------
+    close(server_sock); // Close socket listening for connections
+    remove(KVS_LOCAL_SERVER_ADDR); // Remove address
+    pthread_join(serverThread,NULL); // Wait for server thread to quit
+    switch(flagShutDown){
+        case SD_CONTROLLED:
+            printf("KVS local server shutdown completed.\n");
+            break;
+        case SD_ACCEPT_ERROR:
+            fprintf(stderr,"KVS local server was forced to shutdown: Unable to accept connections.\n");
+            break;
+        default:
+            fprintf(stderr,"KVS local server was forced to shutdown: Unknown exception.\n");
+            break;
+    }
+    closeClients(); // Close connections to the clients, join repective threads, and free memory
+    groupClear(); // Clear memory of all groups 
     exit(0);
+    // [PROBLEMA DOS DIABOS]
+    // [SE SE TIVER DE FAZER ABORT FORA DA MAIN POR EXEMPLO EM KVS LOCAL SERVER THREAD, FICAMOS PRESOS NO PRINTF]
+    // MANDAR SINAL PARA DESBLOQUER O PRINTF
 }
 
 // ---------- KVS Server thread function ----------
@@ -130,19 +157,30 @@ void * KVSLocalServerThread(void * server_sock){
         clientSocket = accept(*((int *) server_sock), NULL, NULL);
         // Catch error waiting for a connection
         if (clientSocket == -1){
-            // [TO DO] DISTINGUISH BETWEEN ERRORS OR JUST SERVER CLOSE
-            printf("Stopped main server thread.\n");
             break;
         }
         // Add client and handle it in a new thread
         // Catch errors handling new client
-        if(clientHandle(clientSocket) <0 ){
-            printf("Error handling new client.\n");
+        if(clientHandle(clientSocket) == ERROR_CLIENT_ALLOCATION){
+            flagShutDown = SD_ALLOCATION_ERROR;
             break;
         }
         printf("Accepted new connection.\n");
     }
-    //[Handle client disconnections]
-    //closeClients(); // Close connections to the clients, join repective threads, and free memory
+    switch(flagShutDown){
+        case RUNNING:
+            flagShutDown = SD_ACCEPT_ERROR;
+            fprintf(stderr,"Main server thread aborted: Unable to accept connections.\n");
+            break;
+        case SD_CONTROLLED:
+            printf("Main server thread was successfully shutdown.\n");
+            break;
+        case SD_ALLOCATION_ERROR:
+            fprintf(stderr,"Main server thread aborted: Allocation error.\n");
+            break;
+        default:
+            fprintf(stderr,"Main server thread aborted: Unknown exception.\n");
+            break;
+    }
     pthread_exit(NULL); // Close KVSServerThread
 }

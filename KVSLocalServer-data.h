@@ -39,6 +39,7 @@ typedef struct groupStruct{
 int groupAdd(char * group);
 int groupDelete(char * group);
 int groupShow(char * group);
+void groupClear();
 
 // ---------- Auxiliary functions ----------
 void entriesDelete(GROUP * group);

@@ -26,7 +26,7 @@ void * KVSLocalServerClientThread(void * client){
             // Output to msgId just to avoid allocating another variable
             msgId = clientAuth(((CLIENT *)client));
             ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
-            printf("Client authenticated | Group: %s | Secret: %s | PID: %d\n", buffer1,buffer2,((CLIENT *)client)->PID);
+            printf("Client authenticated -> Group id: %s | Secret: %s | PID: %d\n", buffer1,buffer2,((CLIENT *)client)->PID);
             continue;
         }
         switch(msgId){
@@ -65,7 +65,6 @@ int clientHandle(int clientSocket){
     CLIENT * newClient = (CLIENT *) malloc(sizeof(CLIENT));
     // Catch allocation error 
     if(newClient == NULL){
-        perror("Error alocating memory to new client");
         return ERROR_CLIENT_ALLOCATION;
     }
     // Store socket for communication with this client
@@ -75,7 +74,8 @@ int clientHandle(int clientSocket){
     // Define connection time
     if(clock_gettime(CLOCK_REALTIME, &(newClient->connTime)) == -1 ) {
         perror("Clock gettime error");
-        // Time is not critical so exit is overkill
+        // Time is not critical so exit is overkill (exit commented out below)
+        // return ERROR_CLIENT_CLOCK
     }
     // Add client to client list
     clientAdd(newClient);
@@ -127,27 +127,21 @@ int clientShow(){
     return 0;
 }
 
-
-// REDO BELOW
-/*
 void closeClients(){
-    // ---------- Remove client block to the linked list ----------
+    // [IN MUTEX client region]
+    // ---------- Remove all client blocks of the linked list ----------
     // [CUIDADO NO FUTURO COM POSSIVEIS PROBLEMAS DE SINCRONIZAÇÃO]
     CLIENT * searchPointer = clients;
     CLIENT * searchPointerPrev;
-    // Check if pointer to the linked list is NULL (i.e. there are no connected clients)
-    if(searchPointer == NULL){
-       return;
-    }
+
     // Iterate through the clients closing, joining, and freeing memory
     while(searchPointer != NULL){
         searchPointerPrev = searchPointer;
         searchPointer = searchPointer->prox;
-        // Close socket 
-        close(searchPointerPrev->clientSocket);
-        // Wait for client thread
-        pthread_join(searchPointerPrev->clientThread, NULL);
-        // Free memory allocated for client
-        free(searchPointerPrev);
+        close(searchPointerPrev->clientSocket); // Close socket 
+        pthread_join(searchPointerPrev->clientThread, NULL); // Wait for client thread
+        free(searchPointerPrev); // Free memory allocated for client
     }
-}*/
+    // [OUT MUTEX client region]
+    printf("Connection to all clients was terminated.\n");
+}

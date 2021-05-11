@@ -41,11 +41,13 @@ int clientDisconnect(CLIENT * client);
 
 int clientShow();
 
+void closeClients();
+
 // REDO below
 // [IMPLEMENT manageClients to avoid synch problems]
 // [TODAS AS ACOES QUE ALTEREM A MEMORIA DA LISTA DE CLIENTES TEM DE PASSAR PELA FUNÇAO manageClients]
 //void manageClients(int action,...)
 /*void closeClient(CLIENT * client);
-void closeClients();
+
 */
 #endif

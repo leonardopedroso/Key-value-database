@@ -15,6 +15,12 @@
 #define KVS_LOCAL_SERVER_ADDR "/tmp/KVSLocalServer"
 #define KVS_LOCAL_SERVER_BACKLOG 5
 
+// Define shuddown descriptors 
+#define RUNNING 0
+#define SD_CONTROLLED 1
+#define SD_ACCEPT_ERROR 2
+#define SD_ALLOCATION_ERROR 3
+
 // ---------- KVS Server thread prototypes ----------
 void * KVSLocalServerThread(void * server_sock);
 void * KVSLocalServerClientThread(void * clientSocket);
