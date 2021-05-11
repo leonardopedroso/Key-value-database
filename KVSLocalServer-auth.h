@@ -16,7 +16,9 @@
 
 int authGetSecret(char * group, char ** secret);
 
-int authBroadcastGroupAndSecret(char * group, char ** secret);
+int authCreateGroup(char * group, char ** secret);
+
+int authDeleteGroup(char * group);
 
 
 #endif

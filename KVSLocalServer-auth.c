@@ -9,6 +9,7 @@ int authGetSecret(char * group, char ** secret){
     // AUTH_OK on succsess
     // AUTH_COM_ERROR if there was an error on the cmmunication
     // AUTH_GOUP_DSN_EXIST if the group doesnt exist
+    // Free should be done inside on error
 
     // Código para teste da minha parte abaixo
     char secretDefault[MAX_STR_LENGTH];
@@ -19,7 +20,7 @@ int authGetSecret(char * group, char ** secret){
     return AUTH_OK;
 }
 
-int authBroadcastGroupAndSecret(char * group, char ** secret){
+int authCreateGroup(char * group, char ** secret){
 
     // Gerar secredo de comprimento aleatorio e allocar com malloc
     // free é feito fora
@@ -42,4 +43,14 @@ int authBroadcastGroupAndSecret(char * group, char ** secret){
     }
     strcpy(*secret,secretDefault);
     return AUTH_OK;
+}
+
+int authDeleteGroup(char * group){
+    // Returns 
+    // AUTH_OK on succsess
+    // AUTH_COM_ERROR on communication error
+    // AUTH_GOUP_DSN_EXIST 
+
+    return AUTH_OK;
+
 }

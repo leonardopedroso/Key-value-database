@@ -5,26 +5,24 @@ GROUP * groups = NULL; // Pointer to the first element of the linked list of gro
 
 // ---------- Data management functions ----------
 int groupAdd(char * groupId){
-
-    printf("1\n");
     // Allocate pointers to group list
-    GROUP * prev;
+    GROUP * prev = NULL;
     GROUP * searchPointer = groups;
-    printf("2\n");
     // If there are not any groups in the list
     if(groups == NULL){
-        printf("3 NULL\n");
         // Allocate group in the beginning of the list
         groups = (GROUP *) malloc(sizeof(GROUP));
-        
         // Catch allocation error
         if(groups == NULL){
             return GROUP_ALLOC_ERROR;
         }
-        printf("4\n");
+        // Set pointer of allocated group 
         searchPointer = groups;
     }else{
-        printf("3 N NULL\n");
+        // If first block has the same id
+        if(searchPointer->prox == NULL && strcmp(searchPointer->id,groupId)==0){
+                return GROUP_ALREADY_EXISTS;
+        }
         // Iterate through the groups until the last, which does not point to other GROUP block
         while(searchPointer->prox != NULL){
             // Check if group already exists
@@ -39,107 +37,142 @@ int groupAdd(char * groupId){
         if(searchPointer->prox == NULL){
             return GROUP_ALLOC_ERROR;
         }
-        printf("4\n");
+        // Set pointer of allocated group and previous element in the list
         prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
-    
-    printf("5.1\n");
-    printf("%s\n",groupId);
+    // Allocate memory for group id
     searchPointer->id = (char * ) malloc(sizeof(char)*(strlen(groupId)+1));
-    if(searchPointer->id==NULL){
+    // Catch allocation error
+    if(searchPointer->id == NULL){
+        // If element is not the first delete reference to block
         if(prev != NULL){
-            prev = NULL;
+            prev->prox = NULL;
+        }else{ // delete reference if it is the first
+            groups = NULL;
         }
-        free(searchPointer);
+        free(searchPointer); // Free allocated block
         return GROUP_ALLOC_ERROR;
     }
-    strcpy(searchPointer->id,groupId);
-    printf("5.2\n");
-    searchPointer->numberEntries = 0;
-    printf("5.3\n");
-    char * secret;
-    int flagAuthFatalError = 0;
-    switch(authBroadcastGroupAndSecret(groupId,&secret)){
-        case AUTH_OK:
+    strcpy(searchPointer->id,groupId); // Set group id string
+    searchPointer->numberEntries = 0; // Init number of entries
+    char * secret; // Define access pointer to generated secret
+    int flagAuthFatalError; // Allocate error flag
+    // Catch errors on secret generation and broadcast to KVS server
+    switch(authCreateGroup(groupId,&secret)){ 
+        case AUTH_OK: // Successfull 
+            flagAuthFatalError = GROUP_OK;
             break;
-        case AUTH_ALLOC_ERROR:
+        case AUTH_ALLOC_ERROR: // Alocation error
             flagAuthFatalError = GROUP_ALLOC_ERROR;
             break;
+        // Communication error with auth server (secret has already been freed)
         case AUTH_COM_ERROR:
             flagAuthFatalError = GROUP_AUTH_COM_ERROR;
             break;
-        case AUTH_GROUP_ALREADY_EXISTS:
+        // Group already exists in server
+        // Occurs if group is created, KVS server shuts down in an uncontrolled manner, 
+        // KVSserver reboots, and then attempts to create a group with the same name
+        case AUTH_GROUP_ALREADY_EXISTS: 
             flagAuthFatalError = GROUP_LOSS_SYNCH;
             break;
     }
-    printf("6\n");
-
-    if(flagAuthFatalError != 0){
-        printf("Created: Group %s | Secret: %s \n",groupId, secret);
-        free(secret);
+    // If no error was caught
+    if(flagAuthFatalError == GROUP_OK){
+        printf("Created group -> Group id: %s | Secret: %s \n",groupId, secret);
+        free(secret); // free generated secret
         return GROUP_OK;
-    }else{ // On error free newly created group
+    }else{ // On error free newly created group and id string
+        // If element is not the first delete reference to block
         if(prev != NULL){
-            prev = NULL;
+            prev->prox = NULL;
+        }else{ // delete reference if it is the first
+            groups = NULL;
         }
-        free(searchPointer);
+        free(searchPointer->id); // Free allocated string for group id
+        free(searchPointer); // Free allocated block
         return flagAuthFatalError;
     }
 }
 
 int groupDelete(char * groupId){
-    GROUP * prev;
+    // Allocate pointer to group list
+    GROUP * prev = NULL;
     GROUP * searchPointer = groups;
+    // Find group
     while(1){
+        // If end of the list is reached without finding the group
         if(searchPointer == NULL){
             return GROUP_DSNT_EXIST;
         }
-        if(strcmp(searchPointer->id,groupId)==0){
+        // Check until group is found
+        if(strcmp(searchPointer->id,groupId) == 0){
             break;
         }
+        // Check next element on the list
         prev = searchPointer;
         searchPointer = searchPointer->prox;
-        prev->prox = searchPointer->prox;
-        //[MUTEX IN REGION ENTRIES]
-        entryDelete(searchPointer);
-        free(searchPointer->id);
-        free(searchPointer);
-        //[MUTEX OUT REGION ENTRIES]
     }
+    // Connect previous element on the list to the next block
+    if (prev == NULL){ // Then block to delete is the first element of the list
+        groups = searchPointer->prox;
+    }else{
+        prev->prox = searchPointer->prox;
+    }
+    //[MUTEX IN REGION ENTRIES]
+    entriesDelete(searchPointer); // delete entries of group
+    free(searchPointer->id); // delete group id of group
+    free(searchPointer); // delete group block
+    //[MUTEX OUT REGION ENTRIES]
+    printf("Deleted group -> Group id: %s\n",groupId);
     return GROUP_OK;
 }
 
-void entryDelete(GROUP * group){
+// Delete all entries of a given group
+void entriesDelete(GROUP * group){
+    // Allocate vectors to entry list 
     ENTRY * prev;
+    // Set searchPointer to initial pointer of the list
     ENTRY * searchPointer = group->entries;
+    // Iterate through all blocks 
     while(searchPointer != NULL){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
-        free(prev);
+        free(prev); // Free memory
     }
 }
   
 int groupShow(char * groupId){
+    // Allocate pinter to group list
     GROUP * searchPointer = groups;
+    // Iterate until the desired group is found
     while(1){
+        // If end of the list has been reached
         if(searchPointer == NULL){
             return GROUP_DSNT_EXIST;
         }
+        // If groupId is found
         if(strcmp(searchPointer->id,groupId)==0){
             break;
         }
+        searchPointer = searchPointer->prox;
     }
-    char * secret;
+    char * secret; // Allocate pointer to secret
+    // Catch errors on secret query to auth server
     switch(authGetSecret(groupId,&secret)){
-        case AUTH_OK:
+        case AUTH_OK: // Success
             break;
+        // Communication error with auth server (secret has already been freed)
         case AUTH_COM_ERROR:
             return GROUP_AUTH_COM_ERROR;
+        // Group already exists in server
+        // Occurs if group is created, KVS auth server shuts down in an uncontrolled manner, 
+        // KVS auth server reboots and lost group information
         case AUTH_GOUP_DSN_EXIST:
             return GROUP_LOSS_SYNCH;
     }
-    printf("Group: %s | Secret: %s | Number of key-value pairs: %d\n",groupId,secret,searchPointer->numberEntries);
-    free(secret);
+    // Print group info
+    printf("Group id: %s | Secret: %s | Number of key-value pairs: %d\n",groupId,secret,searchPointer->numberEntries);
+    free(secret); // Free allocated memory
     return GROUP_OK;
 }

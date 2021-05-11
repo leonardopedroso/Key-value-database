@@ -41,6 +41,6 @@ int groupDelete(char * group);
 int groupShow(char * group);
 
 // ---------- Auxiliary functions ----------
-void entryDelete(GROUP * group);
+void entriesDelete(GROUP * group);
 
 #endif

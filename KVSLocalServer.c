@@ -46,34 +46,65 @@ int main(){
     // The corresponding frees would have to be done outside the allocating files 
     // So we chose clear code over messy code with slightly less memory needs
     char group[MAX_STR_LENGTH];
+    printf("Welcome to KVS Local Server console.\n");
     // Print menu once
     printMenu();
     // Wait for commands in console user interface
     while(1){
+        printf(">> "); // print console indicator
         switch(getCommand(&group[0])){
-            case CREATE_DES:
+            case CREATE_DES: // Create group
+                // Catch group create error
                 switch(groupAdd(&group[0])){
                     case GROUP_OK:
                         break;
+                    case GROUP_ALLOC_ERROR:
+                        fprintf(stderr,"Unable to create group: Allocation error has occurred.\n");
+                        break;
+                    case GROUP_ALREADY_EXISTS:
+                        fprintf(stderr,"Unable to create group: Group already exists.\n");
+                        break;
+                    case GROUP_AUTH_COM_ERROR:
+                        fprintf(stderr,"Unable to create group: Communication with authentication server failed.\n");
+                        break;
+                    case GROUP_LOSS_SYNCH:
+                        fprintf(stderr,"Unable to create group: Lost synchronization with authentication server.\n");
                     default:
-                        printf("Failed to create group %s\n\n",group);
+                        fprintf(stderr,"Unable to create group: Unknown exception.\n");
                         break;
                 }
                 break;
-            case DELETE_DES:
+            case DELETE_DES: // Delete group
+                // Catch group delete error
                 switch(groupDelete(&group[0])){
                     case GROUP_OK:
-                        printf("Deleted group %s\n\n",group);
+                        break;
+                    case GROUP_DSNT_EXIST:
+                        fprintf(stderr,"Unable to delete group: Group does not exist.\n");
                         break;
                     default:
-                        printf("Failed to deleted group %s\n\n",group);
+                        fprintf(stderr,"Unable to delete group: Unknown exception.\n");
                         break;
                 }
                 break;
-            case GROUP_DES:
+            case GROUP_DES: // Show group
                 switch(groupShow(&group[0])){
                     case GROUP_OK:
-                        printf("Showing group %s\n\n",group);
+                        break;
+                    case GROUP_ALLOC_ERROR:
+                        fprintf(stderr,"Unable to show group: Allocation error has occurred.\n");
+                        break;
+                    case GROUP_DSNT_EXIST:
+                        fprintf(stderr,"Unable to show group: Group does not exist.\n");
+                        break;
+                    case GROUP_LOSS_SYNCH:
+                        fprintf(stderr,"Unable to show group: Lost synchronization with authentication server.\n");
+                        break;
+                    case GROUP_AUTH_COM_ERROR:
+                        fprintf(stderr,"Unable to show group: Communication with authentication server failed.\n");
+                        break;
+                    default:
+                        fprintf(stderr,"Unable to show group: Unknown exception.\n");
                         break;
                 }
                 break;
@@ -81,7 +112,6 @@ int main(){
                 clientShow();
                 break;
             default: // Invalid command
-                printf("\n");
                 printMenu(); // Print menu again
                 break;
         }

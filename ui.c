@@ -1,6 +1,7 @@
 #include "ui.h"
 
 void printMenu(void){
+    printf("\n");
     printf("Possible commands:\n");
     printf("Group ID up to %d characters\n",MAX_STR_LENGTH);
     printf("%s%s[<groupID>]\tCreates a new group with the group\n",CREATE_CMD,
@@ -15,7 +16,6 @@ void printMenu(void){
         APPS_CMD);
     printf("\t\t\tprinting their PID, connection establishing time and\n");
     printf("\t\t\tconnection close time (if not currently connected\n");
-    printf("\n");
 }
 
 // \brief Gets a string from the keyboard, handles the errors and prints them
@@ -27,14 +27,14 @@ int getStrFromStdin(char input[],int len){
     memset(input,'\0',MAX_INPUT);
 
     if(fgets(input,len,stdin)==NULL){
-        printf("Error in getting input\n");
+        printf("Error in getting input.\n");
         return -1;
     }
     // If it does not find the new line character, it clears completely stdin
     if(memchr(input,'\n',len) == NULL){
         while(getchar() != '\n');
         
-        printf("Input too large\n");
+        printf("Input too large.\n");
         return -1;
     }
     // the last char of input must be \n if MAX_INPUT is respected
@@ -59,7 +59,7 @@ int getCommand(char *groupName){
 
     // if none is given
     if(arg[0] == NULL){
-        printf("No argument given\n");
+        printf("No argument given.\n");
         return 0;
     } 
     else if(arg[1] == NULL){
@@ -83,16 +83,16 @@ int getCommand(char *groupName){
                 return GROUP_DES;
             }
         } else{
-            printf("Group name too large\n");
+            printf("Group name too large.\n");
             return 0;
         }
     }
     // if too many are given since all commands considered only take two args
     else {
-        printf("Too many arguments\n");
+        printf("Too many arguments.\n");
         return 0;
     }
 
-    printf("Invalid command\n");
+    printf("Invalid command.\n");
     return 0;
 }
