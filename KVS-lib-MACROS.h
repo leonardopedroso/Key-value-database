@@ -17,9 +17,6 @@
 #define DISCONNECTED_SOCKET -1
 
 // ---------- Data management ----------
-// [POR ENQUANTO ESTAMOS A ETABELECER UM LIMITE DE CARACTERES MAS 
-// PODE-SE NA BOA ALOCAR DINAMICAMENTE SEM LIMITE SE QUISERMOS DEPOIS]
-// Data management parameters
 #define MAX_STR_LENGTH 20
 
 #endif

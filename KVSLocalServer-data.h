@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> // to manipulate strings
+#include "KVSLocalServer-auth.h"
 
 // Struct to hold key-value pairs
 typedef struct entryStruct{
@@ -17,14 +18,29 @@ typedef struct entryStruct{
 typedef struct groupStruct{
     char * id; //with malloc instead of char id[MAX_STR_LENGTH];
     ENTRY * entries;
+    //number of entries as variable instead of counting each time this values is needed
+    // If one has to cout each time it would hacve to be inside mutexs, because is is 
+    // accessed by pointers that can become unvalid after entry remove
+    int numberEntries; 
 
     struct groupStruct * prox;
 }GROUP;
 
 // ---------- Data management prototypes ----------
 #define GROUP_OK 0
+#define GROUP_ALREADY_EXISTS -1
+#define GROUP_DSNT_EXIST -2
+#define GROUP_ALLOC_ERROR -3
+
+#define GROUP_AUTH_COM_ERROR -100
+#define GROUP_LOSS_SYNCH -101
+
+
 int groupAdd(char * group);
 int groupDelete(char * group);
 int groupShow(char * group);
+
+// ---------- Auxiliary functions ----------
+void entryDelete(GROUP * group);
 
 #endif

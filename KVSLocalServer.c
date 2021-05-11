@@ -54,17 +54,19 @@ int main(){
             case CREATE_DES:
                 switch(groupAdd(&group[0])){
                     case GROUP_OK:
-                        printf("Created group %s with secret __\n",group);
+                        break;
+                    default:
+                        printf("Failed to create group %s\n\n",group);
                         break;
                 }
-                // [COMMUNICATE WITH AUTH SERVER]
-                // generateSecret();
-                // brodcastSecret();
                 break;
             case DELETE_DES:
                 switch(groupDelete(&group[0])){
                     case GROUP_OK:
                         printf("Deleted group %s\n\n",group);
+                        break;
+                    default:
+                        printf("Failed to deleted group %s\n\n",group);
                         break;
                 }
                 break;

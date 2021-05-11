@@ -3,3 +3,4 @@
  watch -n 1 tail logger.txt
  2. Adicionar um comando na ui de shutdown
  3. segredos de comprimentpo aleatoruio i.e. entre 1 e MAX_STR_LEn
+ 4. 
