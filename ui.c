@@ -66,6 +66,8 @@ int getCommand(char *groupName){
         // only one arg given
         if(strcmp(APPS_CMD,arg[0]) == 0){
             return APPS_DES;
+        }else if(strcmp(EXIT_CMD,arg[0]) == 0){
+            return EXIT_DES;
         }
     } 
     else if(strtok_r(NULL,ARG_DELIM,&savePtr) == NULL){
