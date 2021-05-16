@@ -3,6 +3,7 @@
 // ---------- Global variables ----------
 int flagShutDown = RUNNING; // set to one if receives shutdown command 
  
+
 int main(){
     // ---------- Setup server variables ----------
     int server_sock; // fd of rcv socket
