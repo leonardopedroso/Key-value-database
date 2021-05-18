@@ -48,4 +48,4 @@ KVSAuthServer.o: KVSAuthServer.c KVSAuthServer.h KVSAuthServer-data.h KVSAuthSer
 	gcc -g -c KVSAuthServer.c
 
 KVSAuthServer: KVSAuthServer.o
-	gcc -g $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o -o KVSAuthServer
+	gcc -g $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o -o KVSAuthServer -lpthread

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "KVS-lib-MACROS.h"
 
 #define MAX_GROUP_LEN 256   // so that one avoids IP fragmentation when 
@@ -11,6 +12,9 @@
                             // This includes the terminator character
 #define MAX_SECRET_LEN 256  // same reason as the above
                             // This also includes the terminator character
+                            // check pp. 1190 of "The Linux Programming 
+                            // Interface" by Kerrisk section to see the reason 
+                            // to the limits used
 
 typedef struct pairStruct{
     char *group;
@@ -19,12 +23,20 @@ typedef struct pairStruct{
     struct pairStruct *prox;
 }PAIR;
 
+// Empty list
+#define EMPTY 1
+// Success
+#define SUCCESS 0
+// Error locking mutex
+#define LOCK_MTX -1
+// Error unlocking mutex
+#define UNLOCK_MTX -2
 // Pair already exists error
-#define PAIR_ALRD_EXISTS -1
+#define PAIR_ALRD_EXISTS -3
 // Could not allocate memory for pair
-#define PAIR_ALLOC_ERR -2
-// Success adding pair
-#define SUCCESS_ADD 0
+#define PAIR_ALLOC_ERR -4
+// Pair does not exist
+#define GROUP_DSNT_EXIST -5
 
 // \brief Adds a new pair to the list. Assumes valid group and secret names
 // \param head linked list head pointer to pointer
@@ -32,11 +44,6 @@ typedef struct pairStruct{
 // \param secret string containing the secret of the new group
 // \return one of the values from the above list
 int addPair(PAIR **head,char *group,char *secret);
-
-// Pair does not exist
-#define GROUP_DSNT_EXIST -1
-// Success deleting pair
-#define SUCCESS_DEL 0
 
 // \brief Deletes a pair from the list
 // \param head linked list head pointer to pointer
@@ -46,6 +53,7 @@ int deletePair(PAIR **head,char *group);
 
 // \brief Deletes all the list of pairs
 // \param head linked list head pointer to pointer
-void deleteAllPairs(PAIR **head);
+// \return one of the values from the above list
+int deleteAllPairs(PAIR **head);
 
 #endif

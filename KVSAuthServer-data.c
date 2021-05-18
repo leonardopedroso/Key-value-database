@@ -1,5 +1,7 @@
 #include "KVSAuthServer-data.h"
 
+static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
 int addPair(PAIR **head,char *group,char *secret){
     // initializes the pointers with a useful value
     PAIR *ptr = *head;
@@ -33,6 +35,11 @@ int addPair(PAIR **head,char *group,char *secret){
         return PAIR_ALLOC_ERR;
     }
 
+    // locks mutex for changes in common data
+    if (pthread_mutex_lock(&mtx) != 0){
+        return LOCK_MTX;
+    }
+
     // everything being well allocated, fills in the information
     strcpy(ptr->group,group);
     strcpy(ptr->secret,secret);
@@ -45,7 +52,11 @@ int addPair(PAIR **head,char *group,char *secret){
         *head = ptr;
     }
 
-    return SUCCESS_ADD;
+    if (pthread_mutex_unlock(&mtx) != 0){
+        return UNLOCK_MTX;
+    }
+
+    return SUCCESS;
 }
 
 int deletePair(PAIR **head,char *group){
@@ -67,7 +78,11 @@ int deletePair(PAIR **head,char *group){
         ptr = ptr->prox;
     }
     
-    //[MUTEX IN REGION ENTRIES]
+    // locks mutex for changes in common data
+    if (pthread_mutex_lock(&mtx) != 0){
+        return LOCK_MTX;
+    }
+    
     // Connect previous element on the list to the next block
     if (prev == NULL){ // Then block to delete is the first element of the list
         *head = ptr->prox;
@@ -78,23 +93,31 @@ int deletePair(PAIR **head,char *group){
     free(ptr->group);
     free(ptr->secret);
     free(ptr);
-    //[MUTEX OUT REGION ENTRIES]
     
-    return SUCCESS_DEL;
+    if (pthread_mutex_unlock(&mtx) != 0){
+        return UNLOCK_MTX;
+    }
+    
+    return SUCCESS;
 }
 
-void deleteAllPairs(PAIR **head){
+int deleteAllPairs(PAIR **head){
     PAIR *prev = NULL;
     PAIR *ptr = NULL;
 
     // if the list is already empty
     if(*head == NULL){
-        return ;
+        return EMPTY;
     }
 
     // if not starts at the head
     prev = *head;
     ptr = (*head)->prox;
+
+    // locks mutex for changes in common data
+    if (pthread_mutex_lock(&mtx) != 0){
+        return LOCK_MTX;
+    }
 
     // and while there is more than one element in the list
     while(ptr != NULL){
@@ -115,9 +138,16 @@ void deleteAllPairs(PAIR **head){
         prev = *head;
     }
 
-    // when there is only one element deletes it and nulls the head
+    // when there is only one element, deletes it and nulls the head
     free((*head)->group);
     free((*head)->secret);
     free((*head));
     *head = NULL;
+
+    // locks mutex for changes in common data
+    if (pthread_mutex_unlock(&mtx) != 0){
+        return LOCK_MTX;
+    }
+
+    return SUCCESS;
 }

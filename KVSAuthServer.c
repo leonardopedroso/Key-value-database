@@ -29,7 +29,6 @@ int main(void){
     }
     printf("Reception socket binded to IP %d, port %u\n", svaddr.sin_addr.s_addr, PORT_NUM);
 
-
     char group1[] = "First group";
     char group2[] = "Second group";
     char group3[] = "Third group";
@@ -113,7 +112,7 @@ int main(void){
         fprintf(stderr,"Pair with given group name does not exist\n");
     }
 
-    deleteAllPairs(&head);
+    //deleteAllPairs(&head);
 
     close(sfd); // closes the socket and may try to complete any pending transmission
     
