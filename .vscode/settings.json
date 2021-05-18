@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.tcc": "c",
+        "fstream": "c",
+        "kvslocalserver-data.h": "c",
+        "kvsauthserver.h": "c"
+    }
+}

@@ -1,0 +1,10 @@
+1. host byte order
+2. marshalling
+3. page 1185 and 1190, minimum reassembly buffer size
+4. choose port for server
+
+1. Em vez de por reception socket meter auth socket
+2. falta te \n em erros
+3. por q e q inseres o server-auth.h no server-data.h?
+4. Temos de definir funcoes q apaguem listas completas para executarem no final dos programas
+5. por q e q usas a variavel global nos grupos? threads

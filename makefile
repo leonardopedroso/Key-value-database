@@ -1,3 +1,5 @@
+CFLAGS = -Wall -pedantic
+
 all: client KVSLocalServer
 
 # ---------- KVS-LIB ----------
@@ -35,4 +37,15 @@ KVSLocalServer.o: KVSLocalServer.c KVSLocalServer.h KVSLocalServer-data.h KVSLoc
 	gcc -c KVSLocalServer.c
 
 KVSLocalServer: KVSLocalServer.o KVSLocalServer-client.o KVSLocalServer-com.o KVSLocalServer-data.o KVSLocalServer-auth.o ui.o
-	gcc KVSLocalServer.o KVSLocalServer-com.o KVSLocalServer-client.o KVSLocalServer-data.o KVSLocalServer-auth.o ui.o -o KVSLocalServer
+	gcc KVSLocalServer.o KVSLocalServer-com.o KVSLocalServer-client.o KVSLocalServer-data.o KVSLocalServer-auth.o ui.o -o KVSLocalServer -lpthread $(CFLAGS)
+
+
+# ---------- AUTH SERVER ----------
+KVSAuthServer-data.o: KVSAuthServer-data.c KVSAuthServer-data.h
+	gcc -g -c KVSAuthServer-data.c
+
+KVSAuthServer.o: KVSAuthServer.c KVSAuthServer.h KVSAuthServer-data.h KVSAuthServer-data.o
+	gcc -g -c KVSAuthServer.c
+
+KVSAuthServer: KVSAuthServer.o
+	gcc -g $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o -o KVSAuthServer
