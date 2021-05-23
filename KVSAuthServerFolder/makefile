@@ -3,7 +3,7 @@ CFLAGS = -g -Wall -pedantic
 KVSAuthServer-data.o: KVSAuthServer-data.c KVSAuthServer-data.h
 	gcc $(CFLAGS) -c KVSAuthServer-data.c
 
-KVSAuthServer-com.o: KVSAuthServer-com.c KVSAuthServer-com.h
+KVSAuthServer-com.o: KVSAuthServer-com.c KVSAuthServer-com.h KVS_local-auth_com.h
 	gcc $(CFLAGS) -c KVSAuthServer-com.c
 
 KVSAuthServer.o: KVSAuthServer.c KVSAuthServer-com.o KVSAuthServer-data.o
