@@ -1,10 +1,12 @@
 #include "KVSLocalServer-data.h" // Include header
+#include "KVSLocalServer-client.h"
 
 // ---------- Global variables ----------
 GROUP * groups = NULL; // Pointer to the first element of the linked list of groups 
 
 // ---------- Data management functions ----------
 int groupAdd(char * groupId){
+    // [IN MUTEX region GROUP list]
     // Allocate pointers to group list
     GROUP * prev = NULL;
     GROUP * searchPointer = groups;
@@ -41,6 +43,8 @@ int groupAdd(char * groupId){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
+    // [OUT MUTEX region GROUP list]
+    // [IN MUTEX region GROUP]
     // Allocate memory for group id
     searchPointer->id = (char * ) malloc(sizeof(char)*(strlen(groupId)+1));
     // Catch allocation error
@@ -93,9 +97,12 @@ int groupAdd(char * groupId){
         free(searchPointer); // Free allocated block
         return flagAuthFatalError;
     }
+    // [OUT MUTEX region GROUP list]
 }
 
 int groupDelete(char * groupId){
+    // ---------- Rearrange list ----------
+    // [IN MUTEX region GROUP list]
     // Allocate pointer to group list
     GROUP * prev = NULL;
     GROUP * searchPointer = groups;
@@ -119,11 +126,17 @@ int groupDelete(char * groupId){
     }else{
         prev->prox = searchPointer->prox;
     }
-    //[MUTEX IN REGION ENTRIES]
+    // [OUT MUTEX region GROUP list]
+    // ---------- Handle deletion of group block ----------
+    // Block is no longer accessible from the list
+    // [MUTEX IN region group]
+    clientDeleteAccessGroup(searchPointer);
     entriesDelete(searchPointer); // delete entries of group
     free(searchPointer->id); // delete group id of group
     free(searchPointer); // delete group block
-    //[MUTEX OUT REGION ENTRIES]
+    //[MUTEX OUT region group]
+    
+    
     printf("Deleted group -> Group id: %s\n",groupId);
     return GROUP_OK;
 }
@@ -132,6 +145,7 @@ int groupDelete(char * groupId){
 void entriesDelete(GROUP * group){
     // Allocate vectors to entry list 
     ENTRY * prev;
+    // [MUTEX IN region group]
     // Set searchPointer to initial pointer of the list
     ENTRY * searchPointer = group->entries;
     // Iterate through all blocks 
@@ -140,9 +154,11 @@ void entriesDelete(GROUP * group){
         searchPointer = searchPointer->prox;
         free(prev); // Free memory
     }
+    // [MUTEX OUT region group]
 }
   
 int groupShow(char * groupId){
+    // [IN MUTEX region GROUP list]
     // Allocate pinter to group list
     GROUP * searchPointer = groups;
     // Iterate until the desired group is found
@@ -173,6 +189,7 @@ int groupShow(char * groupId){
     }
     // Print group info
     printf("Group id: %s | Secret: %s | Number of key-value pairs: %d\n",groupId,secret,searchPointer->numberEntries);
+    // [OUT MUTEX region GROUP list]
     free(secret); // Free allocated memory
     return GROUP_OK;
 }
@@ -180,17 +197,23 @@ int groupShow(char * groupId){
 void groupClear(){
     // Allocate pointer to group list
     GROUP * prev = NULL;
+    // [IN MUTEX region GROUP list]
     GROUP * searchPointer = groups;
     // Iterate through all groups
     while(searchPointer != NULL){
         // Check next element on the list
         prev = searchPointer;
         searchPointer = searchPointer->prox;
-        //[MUTEX IN REGION ENTRIES]
+        //[MUTEX IN REGION group]
+        // Very serious synch problem requires solution!
+        // As soon as a group is eliminate the pointers each client has to acess the group
+        // become invalid. So the clients need to be notified and the connection closed 
+        clientDeleteAccessGroup(searchPointer);
         entriesDelete(prev); // delete entries of group
         free(prev->id); // delete group id of group
         free(prev); // delete group block
-        //[MUTEX OUT REGION ENTRIES]
+        //[MUTEX OUT REGION group]
     }
+    // [OUT MUTEX region GROUP list]
     printf("Cleared all groups.\n");
 }

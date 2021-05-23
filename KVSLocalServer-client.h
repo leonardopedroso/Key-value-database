@@ -35,7 +35,9 @@ int clientHandle(int sockClient);
 
 void clientAdd(CLIENT * client);
 
-int clientAuth(CLIENT * client);
+int clientAuth(CLIENT * client, char * groupId, char * secret);
+
+void clientDeleteAccessGroup(GROUP * groupPtr);
 
 int clientDisconnect(CLIENT * client);
 
@@ -43,11 +45,5 @@ int clientShow();
 
 void closeClients();
 
-// REDO below
-// [IMPLEMENT manageClients to avoid synch problems]
-// [TODAS AS ACOES QUE ALTEREM A MEMORIA DA LISTA DE CLIENTES TEM DE PASSAR PELA FUNÇAO manageClients]
-//void manageClients(int action,...)
-/*void closeClient(CLIENT * client);
 
-*/
 #endif

@@ -12,6 +12,7 @@
 // ---------- Query status ----------
 #define STATUS_OK 0
 #define STATUS_ACCSS_DENIED -1
+#define STATUS_GROUP_DSN_EXIST -2
 
 // ---------- Connectivity ----------
 #define DISCONNECTED_SOCKET -1

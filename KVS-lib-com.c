@@ -78,5 +78,14 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         clientSock = DISCONNECTED_SOCKET;
     }
     // [OUT MUTEX com region]
-    return status;
+    switch(status){
+    case STATUS_OK:
+        return QUERY_OK;
+    case STATUS_ACCSS_DENIED:
+        return QUERY_ACCSS_DENIED;
+    case STATUS_GROUP_DSN_EXIST:
+        return QUERY_GROUP_DSN_EXIST;
+    default:
+        return QUERY_COM_ERROR;
+    }
 }

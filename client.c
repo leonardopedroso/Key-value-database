@@ -9,16 +9,24 @@ int main(){
 
     char a[10] = "ab";
     char b[10] = "cd";
-    if(establish_connection(a,b) == ESTBL_CONN_SUCCESS){
-        printf("Established connection.\n");
+    switch (establish_connection(a,b)){
+        case SUCCESS:
+            printf("Established connection.\n");
+            break;
+        default:
+            printf("Error establishing connection.\n");
+            break;
     }
 
+    getchar();
 
 
-
-    if(close_connection() == CLOSE_CONN_SUCCESS){
+    if(close_connection() == SUCCESS){
         printf("Close connection succssefull.\n");
+    }else{
+        printf("Close connection error.\n");
     }
-
+    fflush(stdout);
+    getchar();
     exit(0);
 }
