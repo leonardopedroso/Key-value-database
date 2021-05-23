@@ -42,7 +42,7 @@ int main(void){
     }
 
     if(read(cfd,&ans,sizeof(ANSWER)) != sizeof(ANSWER)){
-        printf("MErda\n");
+        printf("Merda\n");
     } else{
         printf("%d\n",ans.code);
     }

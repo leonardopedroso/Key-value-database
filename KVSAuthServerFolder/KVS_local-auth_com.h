@@ -4,7 +4,7 @@
 #include "KVS-lib-MACROS.h"
 
 // Server address
-#define SV_IP "172.18.0.1"
+#define SV_IP "193.136.138.12"
 // Server port number
 #define PORT_NUM 50002
 
