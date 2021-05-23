@@ -14,7 +14,7 @@ int createServerSocket(int *sfd,struct sockaddr_in *svaddr){
     
     memset(svaddr,0,sizeof(struct sockaddr_in));   // initializes address
     svaddr->sin_family = AF_INET; // set socket family type
-    if(inet_aton(SV_IP,&(svaddr->sin_addr)) == 0){ // sets the server IP address 
+    if(inet_aton(SV_IP_SV,&(svaddr->sin_addr)) == 0){ // sets the server IP address 
         return ERR_CONVERT_IP;
     }
     // chooses port and guarantees portability regarding endianness

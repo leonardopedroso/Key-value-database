@@ -12,7 +12,7 @@ int main(void){
     switch(createServerSocket(&sfd,&svaddr)){
         case SUCCESS:
             printf("Authentication server socket created\n");
-            printf("Socket binded to IP %s, port %u\n\n",SV_IP,PORT_NUM);
+            printf("Socket binded to IP %s, port %u\n\n",SV_IP_SV,PORT_NUM);
             return 0;
         case ERR_SOCK_CREATE:
             printf("Error creating socket\nShutting down\n");

@@ -24,7 +24,7 @@ int main(void){
 
     memset(&svaddr,0,sizeof(struct sockaddr_in));   // initializes address
     svaddr.sin_family = AF_INET; // set socket family type
-    if(inet_aton(SV_IP,&svaddr.sin_addr) == 0){ // sets the server IP address 
+    if(inet_aton(SV_IP_CL,&svaddr.sin_addr) == 0){ // sets the server IP address 
         perror("Error converting IP\n");
         exit(-1);
     } 
