@@ -23,7 +23,3 @@ int authDeleteGroup(char * group);
 
 #endif
 
-
-
-i = 
-if(getComand() && i == 0)

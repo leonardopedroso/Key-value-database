@@ -24,7 +24,7 @@ int groupAdd(char * groupId){
                 return GROUP_ALREADY_EXISTS;
         }
         // Iterate through the groups until the last, which does not point to other GROUP block
-        while(searchPointer->prox != NULL){
+        while(searchPointer != NULL){
             // Check if group already exists
             if(strcmp(searchPointer->id,groupId)==0){
                 return GROUP_ALREADY_EXISTS;
@@ -168,7 +168,7 @@ int groupShow(char * groupId){
         // Group already exists in server
         // Occurs if group is created, KVS auth server shuts down in an uncontrolled manner, 
         // KVS auth server reboots and lost group information
-        case AUTH_GOUP_DSN_EXIST:
+        case AUTH_GROUP_DSN_EXIST:
             return GROUP_LOSS_SYNCH;
     }
     // Print group info
