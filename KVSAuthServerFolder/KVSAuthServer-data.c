@@ -1,7 +1,5 @@
 #include "KVSAuthServer-data.h"
 
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-
 int checkPairElem(char *pairElem){
     char *ptr = NULL;
 
@@ -19,6 +17,14 @@ int checkPairElem(char *pairElem){
 }
 
 int addPair(PAIR **head,char *group,char *secret){
+    // Verifies the group name and the secret
+    if(checkPairElem(group) != SUCCESS){
+        return BAD_GROUP;
+    }
+    if(checkPairElem(secret) != SUCCESS){
+        return BAD_SECRET;
+    }
+
     // initializes the pointers with a useful value
     PAIR *ptr = *head;
     PAIR *prev = *head;
@@ -51,11 +57,6 @@ int addPair(PAIR **head,char *group,char *secret){
         return PAIR_ALLOC_ERR;
     }
 
-    // locks mutex for changes in common data
-    if (pthread_mutex_lock(&mtx) != 0){
-        return LOCK_MTX;
-    }
-
     // everything being well allocated, fills in the information
     strcpy(ptr->group,group);
     strcpy(ptr->secret,secret);
@@ -68,14 +69,15 @@ int addPair(PAIR **head,char *group,char *secret){
         *head = ptr;
     }
 
-    if (pthread_mutex_unlock(&mtx) != 0){
-        return UNLOCK_MTX;
-    }
-
     return SUCCESS;
 }
 
 int deletePair(PAIR **head,char *group){
+    // Verifies the group name
+    if(checkPairElem(group) != SUCCESS){
+        return BAD_GROUP;
+    }
+
     PAIR * prev = NULL;
     PAIR * ptr = *head;
     
@@ -94,11 +96,6 @@ int deletePair(PAIR **head,char *group){
         ptr = ptr->prox;
     }
     
-    // locks mutex for changes in common data
-    if (pthread_mutex_lock(&mtx) != 0){
-        return LOCK_MTX;
-    }
-    
     // Connect previous element on the list to the next block
     if (prev == NULL){ // Then block to delete is the first element of the list
         *head = ptr->prox;
@@ -110,10 +107,6 @@ int deletePair(PAIR **head,char *group){
     free(ptr->secret);
     free(ptr);
     
-    if (pthread_mutex_unlock(&mtx) != 0){
-        return UNLOCK_MTX;
-    }
-    
     return SUCCESS;
 }
 
@@ -123,17 +116,12 @@ int deleteAllPairs(PAIR **head){
 
     // if the list is already empty
     if(*head == NULL){
-        return EMPTY;
+        return SUCCESS;
     }
 
     // if not starts at the head
     prev = *head;
     ptr = (*head)->prox;
-
-    // locks mutex for changes in common data
-    if (pthread_mutex_lock(&mtx) != 0){
-        return LOCK_MTX;
-    }
 
     // and while there is more than one element in the list
     while(ptr != NULL){
@@ -160,10 +148,42 @@ int deleteAllPairs(PAIR **head){
     free((*head));
     *head = NULL;
 
-    // locks mutex for changes in common data
-    if (pthread_mutex_unlock(&mtx) != 0){
-        return LOCK_MTX;
+    return SUCCESS;
+}
+
+int getSecret(PAIR *head,char *group,char* dest){
+    // Verifies the group name
+    if(checkPairElem(group) != SUCCESS){
+        return BAD_GROUP;
     }
 
-    return SUCCESS;
+    PAIR *ptr = head;
+
+    memset(dest,'\0',MAX_SECRET_LEN);
+
+    while(ptr != NULL){
+        if(strcmp(ptr->group,group) == 0){
+            strcpy(dest,ptr->secret);
+            return SUCCESS_GET_SECRET;
+        }
+    }
+
+    return GROUP_DSNT_EXIST;
+}
+
+void printAllPairs(PAIR *head){
+    PAIR *ptr = head;
+
+    if(ptr == NULL){
+        printf("Empty list\n");
+    }
+
+    while(ptr!=NULL){
+        printf("Group  - %s\n",ptr->group);
+        printf("Secret - %s\n",ptr->secret);
+
+        ptr = ptr->prox;
+    }
+
+    printf("\n");
 }

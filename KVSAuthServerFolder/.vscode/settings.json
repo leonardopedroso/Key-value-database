@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "kvsauthserver.h": "c",
+        "stdio.h": "c",
+        "unistd.h": "c",
+        "kvsauthserver-data.h": "c",
+        "kvsauthserver-com.h": "c"
+    }
+}
