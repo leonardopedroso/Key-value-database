@@ -13,7 +13,7 @@ int main(void){
         case SUCCESS:
             printf("Authentication server socket created\n");
             printf("Socket binded to IP %s, port %u\n\n",SV_IP_SV,PORT_NUM);
-            return 0;
+            break;
         case ERR_SOCK_CREATE:
             printf("Error creating socket\nShutting down\n");
             return 0;
