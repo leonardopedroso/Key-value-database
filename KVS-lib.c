@@ -21,7 +21,9 @@ int establish_connection (char * group_id, char * secret){
         perror("Error connecting to server");
         return ESTBL_CONN_ERROR_CONNECTION_SERVER;
     }
-    switch (queryKVSLocalServer(getpid(),group_id, secret, NULL)){
+    // Query KVS Local server for authentication
+    //(int msgId, char * str1, char * str2, uint64_t len2, char * str3, uint64_t * len3)
+    switch (queryKVSLocalServer(getpid(),group_id, secret, strlen(secret)+1, NULL,NULL)){
         case STATUS_OK:
             return ESTBL_CONN_SUCCESS;
         case STATUS_ACCSS_DENIED:
@@ -35,7 +37,7 @@ int establish_connection (char * group_id, char * secret){
 
 int close_connection(){
     // Send disconnection request
-    int status = queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL, NULL);
+    int status = queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL,0, NULL,NULL);
     // Even if communication with the server is not possible connection is closed
     // The only way an error arises is if the server is either disconnected or 
     // unable to answer the query

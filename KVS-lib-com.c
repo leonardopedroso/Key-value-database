@@ -4,7 +4,7 @@
 int clientSock = DISCONNECTED_SOCKET; // client socket
 struct sockaddr_un server_sock_addr; // server socket address
 
-int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
+int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char ** str3, uint64_t * len3){
     // [IN MUTEX com region]
     // Check if socket has been connected
     if(clientSock == DISCONNECTED_SOCKET){
@@ -36,31 +36,36 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, char * str3){
     // str2 = NULL if a second argument is not sent
     if(str2 != NULL){
         // 4. Write size of second string
-        strLen = strlen(str2)+1; // add+1 to include \0
-        if(write(clientSock,&strLen,sizeof(int))<=0){
+        if(write(clientSock,&len2,sizeof(uint64_t))<=0){
             return QUERY_COM_ERROR;
         }
         // 5. Write second string
-        if(write(clientSock,str2,strLen)<=0){
+        if(write(clientSock,str2,len2)<=0){
             return QUERY_COM_ERROR;
         }
     }else{
-        strLen = 0;
-        if(write(clientSock,&strLen,sizeof(int))<=0){
+        len2 = 0;
+        if(write(clientSock,&len2,sizeof(uint64_t))<=0){
             return QUERY_COM_ERROR;
         }
     }
-    // 6. Read size of response / status message
+    // 6. Read status message
     int status;
     if(read(clientSock,&status,sizeof(int))<= 0){
         return QUERY_COM_ERROR;
     }
+
     // 7. If response contains string response read it,
     int bytesToRead,nbytes; 
     if(status > 0){
+        // Read size of response 
+        if(read(clientSock,len3,sizeof(uint64_t))<= 0){
+            return QUERY_COM_ERROR;
+        }
+        *str3 = (char * ) malloc(*len3);
         bytesToRead = status;
         while(bytesToRead > 0){
-            nbytes = read(clientSock,str3+status-bytesToRead,bytesToRead);
+            nbytes = read(clientSock,*str3+status-bytesToRead,bytesToRead);
             if(nbytes <= 0){
                 return QUERY_COM_ERROR;
             }else{

@@ -8,6 +8,7 @@
 #include <sys/un.h> // to use unix domain sockets
 #include <string.h> // to use strcpy
 
+
 // Define server parameters
 #define KVS_LOCAL_SERVER_ADDR "/tmp/KVSLocalServer"
 

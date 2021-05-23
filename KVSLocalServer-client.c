@@ -5,28 +5,31 @@ CLIENT * clients = NULL; // Pointer to the first element of the linked list of c
 
 void * KVSLocalServerClientThread(void * client){
     // Allocate buffers
-    char buffer1[MAX_STR_LENGTH];
-    int buffer1Len;
-    char buffer2[MAX_STR_LENGTH];
-    int buffer2Len;
+    char * buffer1;
+    char * buffer2;
+    uint64_t buffer2Len;
     int msgId = 0;
     
     // Loop receiving and handling queries
     while(1){
-        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1[0], &buffer2[0]) == RCV_QUERY_COM_ERROR){
+        buffer1 = NULL;
+        buffer2 = NULL;
+        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) == RCV_QUERY_COM_ERROR){
             // [CUIDADO QUANDO TIVER O CALLBACK]
-            printf("Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
+            fprintf(stderr,"Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
             close(((CLIENT *)client)->clientSocket);
             pthread_exit(NULL); // Close KVSServerThread
         }
         // ---------- Authenticate client ----------
-        if(msgId >= MSG_ID_ESTBL_CONN){
+        if(msgId >= MSG_ID_ESTBL_CONN){ // PIDS greater than MSG_ID_ESTBL_CONN
             // Define client PID
             ((CLIENT *)client)->PID = msgId;
             // Output to msgId just to avoid allocating another variable
             msgId = clientAuth(((CLIENT *)client));
-            ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
+            ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
             printf("Client authenticated -> Group id: %s | Secret: %s | PID: %d\n", buffer1,buffer2,((CLIENT *)client)->PID);
+            free(buffer1);
+            free(buffer2);
             continue;
         }
         switch(msgId){
@@ -46,7 +49,7 @@ void * KVSLocalServerClientThread(void * client){
             case MSG_ID_CLOSE_CONN:
                 // Commanded disconnection
                 msgId = clientDisconnect(client);
-                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
                 // [CUIDADO QUANDO TIVER O CALLBACK]
                 close(((CLIENT *)client)->clientSocket);
                 pthread_exit(NULL); // Close KVSServerThread
@@ -54,7 +57,10 @@ void * KVSLocalServerClientThread(void * client){
             default:
                 break;
         }
-
+        // Free memory allocated in this query (note that buffer2 may be NULL)
+        // It is only guaranteed that buffer2 does not have an invalid address
+        free(buffer1);
+        free(buffer2);
     }
 }
 
