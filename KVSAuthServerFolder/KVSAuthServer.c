@@ -8,21 +8,21 @@
 int main(void){
     int sfd;                    // fd of server socket
     struct sockaddr_in svaddr;  // struct addr of sever socket
-    
+
     switch(createServerSocket(&sfd,&svaddr)){
         case SUCCESS:
             printf("Authentication server socket created\n");
             printf("Socket binded to IP %s, port %u\n\n",SV_IP,PORT_NUM);
-            break;
+            return 0;
         case ERR_SOCK_CREATE:
             printf("Error creating socket\nShutting down\n");
-            break;
+            return 0;
         case ERR_CONVERT_IP:
             printf("Error converting socket IP\nShutting down\n");
-            break;
+            return 0;
         case ERR_SOCK_BIND:
             printf("Error binding socket\nShutting down\n");
-            break;
+            return 0;
     }
 
     PAIR *head = NULL;
