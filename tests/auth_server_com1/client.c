@@ -56,7 +56,7 @@ int main(void){
     if(read(cfd,&ans,sizeof(ANSWER)) != sizeof(ANSWER)){
         printf("MErda\n");
     } else{
-        printf("%d\n",ans.code);
+        printf("%d %s\n",ans.code,ans.secret);
     }
 
     req.code = REQ_DELETE;

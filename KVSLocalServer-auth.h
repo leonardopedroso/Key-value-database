@@ -1,11 +1,6 @@
 #ifndef KVS_LOCAL_SERVER_AUTH_H
 #define KVS_LOCAL_SERVER_AUTH_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h> // to manipulate strings
-#include "KVS-lib-MACROS.h"
-
 #define AUTH_OK 0
 #define AUTH_GOUP_DSN_EXIST -1
 #define AUTH_ALLOC_ERROR -2

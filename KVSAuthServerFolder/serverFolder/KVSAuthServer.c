@@ -11,21 +11,21 @@ int main(void){
 
     switch(createServerSocket(&sfd,&svaddr)){
         case SUCCESS:
-            printf("Authentication server socket created\n");
-            printf("Socket binded to IP %s, port %u\n\n",SV_IP_SV,PORT_NUM);
+            fprintf(stderr,"Authentication server socket created\n");
+            printf("Socket binded to IP %s, port %u\n",SV_IP,PORT_NUM);
             break;
         case ERR_SOCK_CREATE:
-            printf("Error creating socket\nShutting down\n");
+            fprintf(stderr,"Error creating socket\nShutting down\n");
             return 0;
         case ERR_CONVERT_IP:
-            printf("Error converting socket IP\nShutting down\n");
+            fprintf(stderr,"Error converting socket IP\nShutting down\n");
             return 0;
         case ERR_SOCK_BIND:
-            printf("Error binding socket\nShutting down\n");
+            fprintf(stderr,"Error binding socket\nShutting down\n");
             return 0;
     }
 
-    PAIR *head = NULL;
+    PAIR *head = NULL;  // head of the list of PAIRS
     REQUEST req;
     ANSWER ans;
     int aux;
@@ -40,11 +40,11 @@ int main(void){
         // if an error happens it will most likely be irreversible so we
         // shutdown the server
         if(aux == -1){
-            printf("Error in recvfrom\nShutting down\n");
+            fprintf(stderr,"Error in recvfrom\nShutting down\n");
             break;
         }
         if(aux != sizeof(REQUEST)){
-            printf("Invalid size datagram received\nIgnoring datagram\n");
+            fprintf(stderr,"Invalid size datagram received\nIgnoring\n");
             continue;
         }
 
@@ -52,72 +52,70 @@ int main(void){
             case REQ_CREATE:
                 printf("Received a request to add pair from IP %s, port %u\n",
                     inet_ntoa(claddr.sin_addr),ntohs(claddr.sin_port));
-                ans.code = addPair(&head,req.group,req.secret);
+                aux = addPair(&head,req.group,req.secret);
                 break;
             case REQ_DELETE:
                 printf("Received a request to delete pair from IP %s,"
                     " port %u\n",inet_ntoa(claddr.sin_addr),
                     ntohs(claddr.sin_port));
-                ans.code = deletePair(&head,req.group);
+                aux = deletePair(&head,req.group);
                 break;
             case REQ_SECRET:
                 printf("Received a request to get secret from IP %s,"
                     " port %u\n",inet_ntoa(claddr.sin_addr),
                     ntohs(claddr.sin_port));
-                ans.code = getSecret(head,req.group,ans.secret);
+                aux = getSecret(head,req.group,ans.secret);
                 break;
             default:
                 printf("Received an invalid request from IP %s, port %u\n",
                     inet_ntoa(claddr.sin_addr),
                     ntohs(claddr.sin_port));
-                ans.code = REQ_CODE_INV;
+                aux = REQ_CODE_INV;
                 break;
         }
 
-        switch(ans.code){
+        switch(aux){
+            case SUCCESS:
+                ans.code = ANS_OK;
+                break;
+            case SUCCESS_GET_SECRET:
+                ans.code = ANS_OK;
+                break;
             case PAIR_ALRD_EXISTS:
-                printf("Pair with given group name already exists\n");
+                fprintf(stderr,"Pair with given group name already exists\n");
+                ans.code = ANS_GROUP_ALREADY_EXISTS;
                 break;
             case PAIR_ALLOC_ERR:
-                printf("Could not allocate memory for new pair\n");
+                fprintf(stderr,"Could not allocate memory for new pair\n");
+                ans.code = ANS_ALLOC_ERROR;
                 break;
             case GROUP_DSNT_EXIST:
-                printf("Pair with given group name does not exist\n");
+                fprintf(stderr,"Pair with given group name does not exist\n");
+                ans.code = ANS_GROUP_DSN_EXIST;
                 break;
             case BAD_GROUP:
-                printf("Given group name is not valid\n");
+                fprintf(stderr,"Given group name is not valid\n");
                 break;
             case BAD_SECRET:
-                printf("Given secret is not valid\n");
+                fprintf(stderr,"Given secret is not valid\n");
                 break;
         }
 
-        if(ans.code == SUCCESS_GET_SECRET){
-            ans.code = SUCCESS;
+        // sends the acknowledge if it got a valid request
+        if(aux != REQ_CODE_INV && aux != BAD_GROUP && aux != BAD_SECRET){
             aux = sendto(sfd,&ans,sizeof(ANSWER),0,(struct sockaddr*)&claddr,
                 sizeof(struct sockaddr_in));
-        } else if(ans.code != REQ_CODE_INV){
-            memset(ans.secret,'\0',MAX_SECRET_LEN);
-            aux = sendto(sfd,&ans,sizeof(ANSWER),0,(struct sockaddr*)&claddr,
-                sizeof(struct sockaddr_in));
-        }
-
-        if(aux == -1){
-            if(errno == ENOBUFS){
-                printf("Queue complete\n");
-            } else if(errno == ENOMEM){
-                printf("No memory available\n");
-            } else{
-                printf("Error in sendto\nShutting down\n");
-                break;
+            if(aux == -1){
+                fprintf(stderr,"Errors in sending a datagram\n");
+            } else if(aux != sizeof(ANSWER)){
+                fprintf(stderr,"Could not send the complete datagram\n");
             }
-        } else if(aux != sizeof(ANSWER)){
-            printf("Could not send the complete message\n");
+        }else{
+            printf("error\n");
         }
     }
 
     deleteAllPairs(&head);
-    // closes the socket and completes any pending transmission
     close(sfd);
     
     return 0;
