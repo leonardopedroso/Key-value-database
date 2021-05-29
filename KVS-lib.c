@@ -8,7 +8,7 @@ extern struct sockaddr_un server_sock_addr; // server socket address
 
 int establish_connection (char * group_id, char * secret){
     // Create client socket    
-    clientSock = socket(AF_UNIX, SOCK_STREAM,0);
+    clientSock = socket(AF_UNIX,SOCK_STREAM,0);
     // Ignore socket disconnection signal from client, which is handled when read/write returns -1
     signal(SIGPIPE, SIG_IGN); 
     // Catch errors creating socket

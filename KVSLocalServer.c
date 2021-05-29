@@ -220,7 +220,6 @@ void * KVSLocalServerShutdownThread(void * arg){
     remove(KVS_LOCAL_SERVER_ADDR); // Remove address
     pthread_join(*serverThread,NULL); // Wait for server thread to quit
     // - Close clients and free memory allocated to them 
-    // [MUTEX IN ALL]
     closeClients(); // Close connections to the clients, join repective threads, and free memory
     // - Clear memory of key value pairs
     groupClear(); // Clear memory of all groups 

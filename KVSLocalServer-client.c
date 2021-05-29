@@ -41,7 +41,9 @@ void * KVSLocalServerClientThread(void * client){
         }
         switch(msgId){
             case MSG_ID_PUT_VAL:
-        
+                // Output status to msgId just to avoid allocating another variable
+                //msgId = groupAddEntry(client->);
+
                 break;
             case MSG_ID_GET_VAL:
         
@@ -117,7 +119,7 @@ void clientAdd(CLIENT * client){
 int clientAuth(CLIENT * client, char * groupId, char * secret){
     // ---------- Verify if group exists ----------
     // Working in the whole group list is vulnerable to synch problems
-    // [MUTEX IN region groups]
+    // [READ LOCK groups]
     // Allocate pointer to group list
     GROUP * searchPointer = groups;
     // Find group
@@ -133,7 +135,7 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
         // Check next element on the list
         searchPointer = searchPointer->prox;
     }
-    // [MUTEX OUT region groups]
+    // [READ UNLOCK groups]
     // ----------- Authenticate secret ----------
     // [CHECK AUTHENTICATION AUTH SERVER]
     // switch(authenticated)
@@ -160,11 +162,12 @@ int clientDisconnect(CLIENT * client){
 }
 
 int clientShow(){
-    // [IN MUTEX client region]
-    CLIENT * searchPointer = clients;
+    
     printf("Client list:\n");
     // Differentiate between connected and disconnected clients
     int flagConnectivity = CONN_STATUS_CONNECTED;
+    // [IN MUTEX client region]
+    CLIENT * searchPointer = clients;
     // Iterate through the clients
     while(searchPointer != NULL){
         switch (flagConnectivity){
@@ -237,18 +240,22 @@ void clientDeleteAccessGroup(GROUP * groupPtr){
     while(searchPointer != NULL){
         // Check if this client had access the the group recently eliminated
         if (searchPointer->authGroup == groupPtr){
-            close(searchPointer->clientSocket); // Close socket 
-            pthread_join(searchPointer->clientThread, NULL); // Wait for client thread
+            // Clould close socket and pthread_wait, but it is excessive
+            // close(searchPointer->clientSocket); // Close socket 
+            // pthread_join(searchPointer->clientThread, NULL); // Wait for client thread
             // Set connectivity status
-            searchPointer->connectivityStatus = CONN_STATUS_DISCONNECTED;
-            // Clear group access
+            searchPointer->connectivityStatus = CONN_STATUS_NOT_AUTH;
+            // Clear group access  
+            // !!!!!!!! MAYBE INTERRUPT MUTEX client region here]
+            // [WRITE LOCK ENTRIES]
             searchPointer->authGroup = NULL;
+            // [WRITE UNLOCK ENTRIES]
             // Define disconnection time
             if(clock_gettime(CLOCK_REALTIME, &(searchPointer->connTime)) == -1 ) {
                 perror("Clock gettime error");
                 // Time is not critical so exit is overkill
             }
-            printf("Commanded disconnection of PID: %d : Authorized group no longer valid.\n",searchPointer->PID);
+            printf("Application PID: %d waiting reauthentication : Authorized group no longer valid.\n",searchPointer->PID);
         }else{
             // Next element on the list 
             searchPointer = searchPointer->prox;
