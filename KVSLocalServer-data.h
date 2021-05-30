@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> // to manipulate strings
+#include <pthread.h> // to use threads
+#include <time.h>
 #include "KVS-lib-MACROS.h"
-#include "KVSLocalServer-client.h"
 #include "KVSLocalServer-auth.h"
 
 
@@ -29,6 +30,22 @@ typedef struct groupStruct{
     struct groupStruct * prox;
 }GROUP;
 
+// Struct to hold clients
+typedef struct clientStruct{
+    int clientSocket;
+    pthread_t clientThread;
+    struct timespec connTime; // -> to date with struct tm *my_tm = localtime(&ts.tv_sec);
+    int connectivityStatus;
+    int PID;
+    struct groupStruct * authGroup;
+    
+    struct clientStruct * prox;
+}CLIENT;
+// Connectivity status
+#define CONN_STATUS_CONNECTED 0
+#define CONN_STATUS_DISCONNECTED 1
+#define CONN_STATUS_NOT_AUTH 3
+
 // ---------- Data management prototypes ----------
 #define GROUP_OK 0
 #define GROUP_ALREADY_EXISTS -1
@@ -44,11 +61,14 @@ int groupDelete(char * group);
 int groupShow(char * group);
 void groupClear();
 
-int groupAddEntry(struct clientStruct * client, char * key, char * value);
-int groupReadEntry(struct clientStruct * client, char * key, char ** val, uint64_t * valLen);
-int groupDeleteEntry(struct clientStruct * client, char * key);
+int groupAddEntry(CLIENT * client, char * key, char * value);
+int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen);
+int groupDeleteEntry(CLIENT * client, char * key);
 
 // ---------- Auxiliary functions ----------
 void entriesDelete(GROUP * group);
+
+// ----------- Client - data interaction ----
+void clientDeleteAccessGroup(GROUP * groupPtr);
 
 #endif
