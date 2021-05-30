@@ -194,9 +194,6 @@ int groupShow(char * groupId){
 int groupAddEntry(CLIENT * client, char * key, char * value){
     //0. Allocate Entry block just in case  (to avoid doing it in the write lock)
     ENTRY * newEntry = (ENTRY * ) malloc(sizeof(ENTRY));
-    newEntry->key = key;
-    newEntry->value = value;
-    newEntry->prox = NULL;
     if(newEntry == NULL){
         // [READ UNLOCK AuthClient]
         // Free memory on error
@@ -204,6 +201,9 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
         free(value);
         return STATUS_ALLOC_ERROR;
     }
+    newEntry->key = key;
+    newEntry->value = value;
+    newEntry->prox = NULL;
     // Allocate auxiliar pointer
     char * aux;
 
@@ -214,6 +214,7 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
         // Free memory on error
         free(key);
         free(value);
+        free(newEntry);
         return STATUS_ACCSS_DENIED;
     }
     // 2. Add value

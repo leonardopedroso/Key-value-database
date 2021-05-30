@@ -117,6 +117,7 @@ int clientHandle(int clientSocket){
     }
     // Init block
     newClient->prox = NULL;
+    newClient->authGroup = NULL;
     // Store socket for communication with this client
     newClient->clientSocket = clientSocket;
     // Define connectivity status of client
