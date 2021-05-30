@@ -2,7 +2,9 @@
 
 // ---------- Global variables ----------
 CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
+static pthread_mutex_t clients_mtx = PTHREAD_MUTEX_INITIALIZER; // Mutex to protect client list
 extern GROUP * groups; // Pointer to group list
+extern pthread_rwlock_t groups_rwlock; // rw lock to protect group list
 
 void * KVSLocalServerClientThread(void * client){
     // Allocate buffers
@@ -117,7 +119,9 @@ int clientHandle(int clientSocket){
     }
     // Init block
     newClient->prox = NULL;
+    // Init access to authenticated group and respective mutex
     newClient->authGroup = NULL;
+    pthread_mutex_init(&newClient->authGroup_mtx,NULL); 
     // Store socket for communication with this client
     newClient->clientSocket = clientSocket;
     // Define connectivity status of client
@@ -129,17 +133,27 @@ int clientHandle(int clientSocket){
         // return ERROR_CLIENT_CLOCK
     }
     // Add client to client list
-    clientAdd(newClient);
+    int clientAddStatus = clientAdd(newClient);
+    if (clientAddStatus != SUCCESS_CLIENT_HANDLE){
+        free(newClient);
+        return ERROR_CLIENT_MUX;
+    }
     // ---------- Handle client in new thread ----------
     pthread_create(&(newClient->clientThread), NULL, &KVSLocalServerClientThread, (void *) newClient);
     return SUCCESS_CLIENT_HANDLE;
 }
 
-void clientAdd(CLIENT * client){
-    // [IN MUTEX client region]
+int clientAdd(CLIENT * client){
+    
     // ---------- Add new client block to the linked list ----------
-    // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
+    int status_mux;
+    // [IN MUTEX client region]
+    status_mux = pthread_mutex_lock(&clients_mtx);
+    if(status_mux != 0){
+        return ERROR_CLIENT_MUX;
+    }
     CLIENT * searchPointer = clients;
+    // Check if pointer to the linked list is NULL (i.e. the new client is the first client)
     if(searchPointer == NULL){
         clients = client;
     }else{
@@ -149,19 +163,24 @@ void clientAdd(CLIENT * client){
         }
         searchPointer->prox = client;
     }
+    pthread_mutex_unlock(&clients_mtx);
     // [OUT MUTEX client region]
+    return SUCCESS_CLIENT_HANDLE;
 }
 
 int clientAuth(CLIENT * client, char * groupId, char * secret){
     // ---------- Verify if group exists ----------
     // Working in the whole group list is vulnerable to synch problems
     // [READ LOCK groups]
+    pthread_rwlock_rdlock(&groups_rwlock);
     // Allocate pointer to group list
     GROUP * searchPointer = groups;
     // Find group
     while(1){
         // If end of the list is reached without finding the group
         if(searchPointer == NULL){
+            pthread_rwlock_unlock(&groups_rwlock);
+            // [READ UNLOCK groups]
             return STATUS_GROUP_DSN_EXIST;
         }
         // Check until group is found
@@ -171,6 +190,7 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
         // Check next element on the list
         searchPointer = searchPointer->prox;
     }
+    pthread_rwlock_unlock(&groups_rwlock);
     // [READ UNLOCK groups]
     // ----------- Authenticate secret ----------
     // [CHECK AUTHENTICATION AUTH SERVER]
@@ -205,6 +225,7 @@ int clientShow(){
     // Differentiate between connected and disconnected clients
     int flagConnectivity = CONN_STATUS_CONNECTED;
     // [IN MUTEX client region]
+    pthread_mutex_lock(&clients_mtx);
     CLIENT * searchPointer = clients;
     // Iterate through the clients
     printf("---------- Connected clients ----------\n");
@@ -238,16 +259,17 @@ int clientShow(){
             }
         }
     }
+    pthread_mutex_unlock(&clients_mtx);
     // [OUT MUTEX client region]
     return 0;
 }
 
 void closeClients(){
+    CLIENT * searchPointerPrev;
     // [IN MUTEX client region]
+    pthread_mutex_lock(&clients_mtx);
     // ---------- Remove all client blocks of the linked list ----------
     CLIENT * searchPointer = clients;
-    CLIENT * searchPointerPrev;
-
     // Iterate through the clients closing, joining, and freeing memory
     while(searchPointer != NULL){
         // Next element on the list
@@ -255,14 +277,16 @@ void closeClients(){
         searchPointer = searchPointer->prox;
         close(searchPointerPrev->clientSocket); // Close socket 
         pthread_join(searchPointerPrev->clientThread, NULL); // Wait for client thread
+        pthread_mutex_destroy(&searchPointerPrev->authGroup_mtx); // Destroy mutex 
         free(searchPointerPrev); // Free memory allocated for client
     }
+    pthread_mutex_unlock(&clients_mtx);
     // [OUT MUTEX client region]
     printf("Connection to all clients was terminated.\n");
 }
 
 void clientDeleteAccessGroup(GROUP * groupPtr){
-    // [IN MUTEX client region]
+    pthread_mutex_lock(&clients_mtx);
     // ---------- Disable all client blocks of the linked list that have access to  ----------
     CLIENT * searchPointer = clients;
     // Iterate through the clients closing, joining, and freeing memory
@@ -277,7 +301,9 @@ void clientDeleteAccessGroup(GROUP * groupPtr){
             // Clear group access  
             // !!!!!!!! MAYBE INTERRUPT MUTEX client region here]
             // [MUTEX IN AuthGroup]
+            pthread_mutex_lock(&searchPointer->authGroup_mtx);
             searchPointer->authGroup = NULL;
+            pthread_mutex_unlock(&searchPointer->authGroup_mtx);
             // [MUTEX OUT AuthGroup]
             // Define disconnection time
             if(clock_gettime(CLOCK_REALTIME, &(searchPointer->connTime)) == -1 ) {
@@ -290,5 +316,6 @@ void clientDeleteAccessGroup(GROUP * groupPtr){
             searchPointer = searchPointer->prox;
         }
     }
+    pthread_mutex_unlock(&clients_mtx);
     // [OUT MUTEX client region]
 }
