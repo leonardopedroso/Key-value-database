@@ -207,9 +207,11 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
     // Allocate auxiliar pointer
     char * aux;
 
-    // [READ LOCK AuthClient]
+    // [MUTEX AuthGroup]
+    pthread_mutex_lock(&client->authGroup_mtx);
     // 1. Check if the authorized group address is valid 
     if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        pthread_mutex_unlock(&client->authGroup_mtx);
         // [READ UNLOCK AuthClient]
         // Free memory on error
         free(key);
@@ -221,7 +223,6 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
     ENTRY * prev = NULL;
     // [WRITE LOCK ENTRIES] 
     ENTRY * searchEntry = client->authGroup->entries;
-    client->authGroup->numberEntries++;
     while(1){
         // If end of the list is reached
         if (searchEntry == NULL){
@@ -230,7 +231,9 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
             }else{
                 prev->prox = newEntry;
             }
+            client->authGroup->numberEntries++;
             // [WRITE UNLOCK ENTRIES]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
             break;
         }
@@ -240,6 +243,7 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
             searchEntry->value = value;
             // [WRITE UNLOCK ENTRIES]
             // [READ UNLOCK AuthClient]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             free(aux); // free previous value
             free(key); // free received key
             free(newEntry); // free entry, which was allocated just in case
@@ -253,8 +257,10 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
 
 int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
     // [READ LOCK AuthClient]
+    pthread_mutex_lock(&client->authGroup_mtx);
     // 1. Check if the authorized group address is valid 
     if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        pthread_mutex_unlock(&client->authGroup_mtx);
         // [READ UNLOCK AuthClient]
         // Free memory on error
         return STATUS_ACCSS_DENIED;
@@ -267,6 +273,7 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
         // If end of the list is reached
         if (searchEntry == NULL){
             // [WRITE UNLOCK ENTRIES]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
             return STATUS_GROUP_DSN_EXIST;
         }
@@ -276,11 +283,13 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
             *val = (char *) malloc(*valLen);
             if(*val == NULL){
                 // [WRITE UNLOCK ENTRIES]
+                pthread_mutex_unlock(&client->authGroup_mtx);
                 // [READ UNLOCK AuthClient]
                 return STATUS_ALLOC_ERROR;
             }
             strcpy(*val,searchEntry->value);
             // [WRITE UNLOCK ENTRIES]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
             break;
         }
@@ -292,8 +301,10 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
 
 int groupDeleteEntry(struct clientStruct * client, char * key){
     // [READ LOCK AuthClient]
+    pthread_mutex_lock(&client->authGroup_mtx);
     // 1. Check if the authorized group address is valid 
     if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        pthread_mutex_unlock(&client->authGroup_mtx);
         // [READ UNLOCK AuthClient]
         return STATUS_ACCSS_DENIED;
     }
@@ -305,6 +316,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
         // If end of the list is reached
         if (searchEntry == NULL){
             // [WRITE UNLOCK ENTRIES]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
             return STATUS_GROUP_DSN_EXIST;
         }
@@ -317,6 +329,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
             }
             client->authGroup->numberEntries--;
             // [WRITE UNLOCK ENTRIES]
+            pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
             break;
         }

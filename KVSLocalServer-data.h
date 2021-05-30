@@ -37,7 +37,9 @@ typedef struct clientStruct{
     struct timespec connTime; // -> to date with struct tm *my_tm = localtime(&ts.tv_sec);
     int connectivityStatus;
     int PID;
+
     struct groupStruct * authGroup;
+    pthread_mutex_t authGroup_mtx; // To protect access to client->authGroup
     
     struct clientStruct * prox;
 }CLIENT;

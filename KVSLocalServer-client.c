@@ -118,7 +118,9 @@ int clientHandle(int clientSocket){
     }
     // Init block
     newClient->prox = NULL;
+    // Init access to authenticated group and respective mutex
     newClient->authGroup = NULL;
+    pthread_mutex_init(&newClient->authGroup_mtx,NULL); 
     // Store socket for communication with this client
     newClient->clientSocket = clientSocket;
     // Define connectivity status of client
@@ -270,6 +272,7 @@ void closeClients(){
         searchPointer = searchPointer->prox;
         close(searchPointerPrev->clientSocket); // Close socket 
         pthread_join(searchPointerPrev->clientThread, NULL); // Wait for client thread
+        pthread_mutex_destroy(&searchPointerPrev->authGroup_mtx); // Destroy mutex 
         free(searchPointerPrev); // Free memory allocated for client
     }
     pthread_mutex_unlock(&clients_mtx);
@@ -293,7 +296,9 @@ void clientDeleteAccessGroup(GROUP * groupPtr){
             // Clear group access  
             // !!!!!!!! MAYBE INTERRUPT MUTEX client region here]
             // [MUTEX IN AuthGroup]
+            pthread_mutex_lock(&searchPointer->authGroup_mtx);
             searchPointer->authGroup = NULL;
+            pthread_mutex_unlock(&searchPointer->authGroup_mtx);
             // [MUTEX OUT AuthGroup]
             // Define disconnection time
             if(clock_gettime(CLOCK_REALTIME, &(searchPointer->connTime)) == -1 ) {
