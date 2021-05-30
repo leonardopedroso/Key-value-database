@@ -32,7 +32,16 @@ int addPair(PAIR **head,char *group,char *secret){
     // gets the pointer to the last element of the list checking the group name
     while(ptr!=NULL){
         if(strcmp(ptr->group,group)==0){
-            return PAIR_ALRD_EXISTS;
+            // the probability of creating two groups with exactly the same name
+            // and secret in the authentication server is very low so it was
+            // most likely just a creation that was not properly acknowledged.
+            // therefore this is signalled
+            if(strcmp(ptr->secret,secret)==0){
+                return SUCCESS;
+            }
+            else{
+                return PAIR_ALRD_EXISTS;
+            }
         }
         prev = ptr;
         ptr = ptr->prox;
@@ -164,7 +173,7 @@ int getSecret(PAIR *head,char *group,char* dest){
     while(ptr != NULL){
         if(strcmp(ptr->group,group) == 0){
             strcpy(dest,ptr->secret);
-            return SUCCESS_GET_SECRET;
+            return SUCCESS;
         }
         ptr=ptr->prox;
     }

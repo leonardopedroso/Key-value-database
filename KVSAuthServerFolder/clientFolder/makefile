@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall -pedantic
+CFLAGS = -g -Wall
 
 all: client
 

@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "KVSLocalServer-auth.h"
 
 int main(void){
@@ -16,14 +19,8 @@ int main(void){
     char *secret;
     secret = (char*)calloc(MAX_SECRET_LEN,sizeof(char));
     
-    printf("%d\n",authCreateGroup("Hello","Ola"));
-    printf("%d %s\n",authGetSecret("Hello",&secret),secret);
-    printf("%d\n",authDeleteGroup("Hello"));
-
-    printf("%d\n",authDeleteGroup("Hello"));
-    printf("%d %s\n",authGetSecret("Hello",&secret),secret);
-
-    printf("%d\n",authCreateGroup("estupido","ze"));
+    printf("%d\n",authCreateGroup("ana","mae"));
+    printf("%d\n",authCreateGroup("ana","temari"));
     
     free(secret);
     endCom();

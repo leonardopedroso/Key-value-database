@@ -24,6 +24,7 @@ int main(void){
             fprintf(stderr,"Error binding socket\nShutting down\n");
             return 0;
     }
+    printf("\n");
 
     PAIR *head = NULL;  // head of the list of PAIRS
     REQUEST req;
@@ -35,10 +36,10 @@ int main(void){
     while(1){
         // before usign recvfrom len shall always be initalized
         len = sizeof(struct sockaddr_in);
+        // receives a request from a client
         aux = recvfrom(sfd,&req,sizeof(REQUEST),0,
             (struct sockaddr*)&claddr,&len);
-        // if an error happens it will most likely be irreversible so we
-        // shutdown the server
+        // if an error happens while receiving we shutdown the server
         if(aux == -1){
             fprintf(stderr,"Error in recvfrom\nShutting down\n");
             break;
@@ -48,61 +49,64 @@ int main(void){
             continue;
         }
 
+        // handles the request based on its code
         switch(req.code){
             case REQ_CREATE:
-                printf("Received a request to add pair from IP %s, port %u\n",
+                printf("Add pair request from   %s, port %u\n",
                     inet_ntoa(claddr.sin_addr),ntohs(claddr.sin_port));
+                printf("Group -  %s\n",req.group);
+                printf("Secret - %s\n",req.secret);
                 aux = addPair(&head,req.group,req.secret);
                 break;
             case REQ_DELETE:
-                printf("Received a request to delete pair from IP %s,"
-                    " port %u\n",inet_ntoa(claddr.sin_addr),
-                    ntohs(claddr.sin_port));
+                printf("Delete pair request from %s, port %u\n",
+                    inet_ntoa(claddr.sin_addr),ntohs(claddr.sin_port));
+                printf("Group -  %s\n",req.group);
                 aux = deletePair(&head,req.group);
                 break;
             case REQ_SECRET:
-                printf("Received a request to get secret from IP %s,"
-                    " port %u\n",inet_ntoa(claddr.sin_addr),
+                printf("Get secret request from  %s, port %u\n",
+                    inet_ntoa(claddr.sin_addr),
                     ntohs(claddr.sin_port));
+                printf("Group -  %s\n",req.group);
                 aux = getSecret(head,req.group,ans.secret);
                 break;
             default:
-                printf("Received an invalid request from IP %s, port %u\n",
-                    inet_ntoa(claddr.sin_addr),
-                    ntohs(claddr.sin_port));
+                printf("Invalid request from     %s, port %u\n",
+                    inet_ntoa(claddr.sin_addr),ntohs(claddr.sin_port));
                 aux = REQ_CODE_INV;
                 break;
         }
 
+        // fills in an answer based on the return values of the functions
         switch(aux){
             case SUCCESS:
                 ans.code = ANS_OK;
-                break;
-            case SUCCESS_GET_SECRET:
-                ans.code = ANS_OK;
+                printf("Success\n");
                 break;
             case PAIR_ALRD_EXISTS:
-                fprintf(stderr,"Pair with given group name already exists\n");
+                fprintf(stderr,"Group name already exists\n");
                 ans.code = ANS_GROUP_ALREADY_EXISTS;
                 break;
             case PAIR_ALLOC_ERR:
-                fprintf(stderr,"Could not allocate memory for new pair\n");
+                fprintf(stderr,"Memory allocation error\n");
                 ans.code = ANS_ALLOC_ERROR;
                 break;
             case GROUP_DSNT_EXIST:
-                fprintf(stderr,"Pair with given group name does not exist\n");
+                fprintf(stderr,"Group name does not exist\n");
                 ans.code = ANS_GROUP_DSN_EXIST;
                 break;
             case BAD_GROUP:
-                fprintf(stderr,"Given group name is not valid\n");
+                fprintf(stderr,"Group name is not valid\n");
                 break;
             case BAD_SECRET:
-                fprintf(stderr,"Given secret is not valid\n");
+                fprintf(stderr,"Secret is not valid\n");
                 break;
         }
 
         // sends the acknowledge if it got a valid request
         if(aux != REQ_CODE_INV && aux != BAD_GROUP && aux != BAD_SECRET){
+            ans.id = req.id;
             aux = sendto(sfd,&ans,sizeof(ANSWER),0,(struct sockaddr*)&claddr,
                 sizeof(struct sockaddr_in));
             if(aux == -1){
@@ -110,9 +114,10 @@ int main(void){
             } else if(aux != sizeof(ANSWER)){
                 fprintf(stderr,"Could not send the complete datagram\n");
             }
-        }else{
-            printf("error\n");
         }
+
+        // to divide the log of each request
+        printf("\n");
     }
 
     deleteAllPairs(&head);

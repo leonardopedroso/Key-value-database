@@ -16,8 +16,6 @@ typedef struct pairStruct{
 
 // Success
 #define SUCCESS 0
-// Success of the get secret function
-#define SUCCESS_GET_SECRET 10
 // Pair already exists error
 #define PAIR_ALRD_EXISTS -3
 // Could not allocate memory for new pair

@@ -1,0 +1,4 @@
+adicionar tempo bem posto no timer - feito
+numero de request
+identificador de maquina - cagativo
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./KVSLocalServer

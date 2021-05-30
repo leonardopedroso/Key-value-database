@@ -18,6 +18,8 @@
 #define REQ_CODE_INV -1
 
 typedef struct requestStruct{
+    // request id
+    int id;
     // action code
     int code;
     // name of the group
@@ -34,12 +36,10 @@ typedef struct requestStruct{
 #define ANS_ALLOC_ERROR -2
 // Answer code for group already existent
 #define ANS_GROUP_ALREADY_EXISTS -3
-// Answer code for invalid group
-#define ANS_INVALID_GROUP -4
-// Answer code for invalid secret
-#define ANS_INVALID_SECRET -5
 
 typedef struct answerStruct{
+    // request id
+    int id;
     // answer code
     int code;
     // secret
