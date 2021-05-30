@@ -22,6 +22,7 @@ typedef struct entryStruct{
 typedef struct groupStruct{
     char * id; //with malloc instead of char id[MAX_STR_LENGTH];
     ENTRY * entries;
+    pthread_rwlock_t entries_rwlock;
     //number of entries as variable instead of counting each time this values is needed
     // If one has to cout each time it would hacve to be inside mutexs, because is is 
     // accessed by pointers that can become unvalid after entry remove

@@ -4,6 +4,7 @@
 CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
 static pthread_mutex_t clients_mtx = PTHREAD_MUTEX_INITIALIZER; // Mutex to protect client list
 extern GROUP * groups; // Pointer to group list
+extern pthread_rwlock_t groups_rwlock; // rw lock to protect group list
 
 void * KVSLocalServerClientThread(void * client){
     // Allocate buffers
@@ -171,12 +172,15 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
     // ---------- Verify if group exists ----------
     // Working in the whole group list is vulnerable to synch problems
     // [READ LOCK groups]
+    pthread_rwlock_rdlock(&groups_rwlock);
     // Allocate pointer to group list
     GROUP * searchPointer = groups;
     // Find group
     while(1){
         // If end of the list is reached without finding the group
         if(searchPointer == NULL){
+            pthread_rwlock_unlock(&groups_rwlock);
+            // [READ UNLOCK groups]
             return STATUS_GROUP_DSN_EXIST;
         }
         // Check until group is found
@@ -186,6 +190,7 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
         // Check next element on the list
         searchPointer = searchPointer->prox;
     }
+    pthread_rwlock_unlock(&groups_rwlock);
     // [READ UNLOCK groups]
     // ----------- Authenticate secret ----------
     // [CHECK AUTHENTICATION AUTH SERVER]
