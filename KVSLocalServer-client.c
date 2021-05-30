@@ -18,6 +18,7 @@ void * KVSLocalServerClientThread(void * client){
         if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) == RCV_QUERY_COM_ERROR){
             // [CUIDADO QUANDO TIVER O CALLBACK]
             fprintf(stderr,"Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
+            ((CLIENT *)client)->connectivityStatus = CONN_STATUS_DISCONNECTED;
             close(((CLIENT *)client)->clientSocket);
             pthread_exit(NULL); // Close KVSServerThread
         }
@@ -114,6 +115,8 @@ int clientHandle(int clientSocket){
     if(newClient == NULL){
         return ERROR_CLIENT_ALLOCATION;
     }
+    // Init block
+    newClient->prox = NULL;
     // Store socket for communication with this client
     newClient->clientSocket = clientSocket;
     // Define connectivity status of client
@@ -194,6 +197,9 @@ int clientDisconnect(CLIENT * client){
 }
 
 int clientShow(){
+    // Buffer and struct for time string conversion
+    char buf[50];
+    struct tm info;
     printf("Client list:\n");
     // Differentiate between connected and disconnected clients
     int flagConnectivity = CONN_STATUS_CONNECTED;
@@ -204,12 +210,11 @@ int clientShow(){
     while(searchPointer != NULL){
         if(searchPointer->connectivityStatus == flagConnectivity){
             printf("PID: %d | ",searchPointer->PID);
-            struct tm *info;
-            info = localtime(&(searchPointer->connTime.tv_sec));
+            localtime_r(&(searchPointer->connTime.tv_sec),&info);
             if(flagConnectivity == CONN_STATUS_CONNECTED || flagConnectivity == CONN_STATUS_NOT_AUTH){
-                printf("Connected at: %s", asctime(info));
+                printf("Connected at: %s", asctime_r(&info,buf));
             }else{
-                printf("Disconnected at: %s", asctime(info));
+                printf("Disconnected at: %s", asctime_r(&info,buf));
             }
         }
         // Next element on the list 

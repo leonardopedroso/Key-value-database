@@ -15,6 +15,7 @@ int groupAdd(char * groupId){
     }
     // Set prox to NULL
     newGroup->prox = NULL;
+    newGroup->entries = NULL;
     // Allocate memory for group id
     newGroup->id = (char * ) malloc(sizeof(char)*(strlen(groupId)+1));
     // Catch allocation error
@@ -135,13 +136,16 @@ int groupDelete(char * groupId){
 // it is not possible to acess the group block or its entries
 void entriesDelete(GROUP * group){
     // Allocate vectors to entry list 
-    ENTRY * prev;
+    ENTRY * prev = NULL;
     // Set searchPointer to initial pointer of the list
     ENTRY * searchPointer = group->entries;
     // Iterate through all blocks 
     while(searchPointer != NULL){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
+        // Free memory
+        free(prev->key);
+        free(prev->value);
         free(prev); // Free memory
     }
 }
@@ -216,6 +220,7 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
     ENTRY * prev = NULL;
     // [WRITE LOCK ENTRIES] 
     ENTRY * searchEntry = client->authGroup->entries;
+    client->authGroup->numberEntries++;
     while(1){
         // If end of the list is reached
         if (searchEntry == NULL){
@@ -236,14 +241,13 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
             // [READ UNLOCK AuthClient]
             free(aux); // free previous value
             free(key); // free received key
-            free(newEntry); // free entry allocated just in case
+            free(newEntry); // free entry, which was allocated just in case
             break;
         }
         prev = searchEntry;
         searchEntry = searchEntry->prox;
     }
-    return STATUS_OK;
-    
+    return STATUS_OK;   
 }
 
 int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
@@ -292,7 +296,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
         // [READ UNLOCK AuthClient]
         return STATUS_ACCSS_DENIED;
     }
-    // 2. Add value
+    // 2. Search value
     ENTRY * prev = NULL;
     // [WRITE LOCK ENTRIES] 
     ENTRY * searchEntry = client->authGroup->entries;
@@ -310,6 +314,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
             }else{
                 prev->prox = searchEntry->prox;
             }
+            client->authGroup->numberEntries--;
             // [WRITE UNLOCK ENTRIES]
             // [READ UNLOCK AuthClient]
             break;
@@ -317,6 +322,11 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
         prev = searchEntry;
         searchEntry = searchEntry->prox;
     }
+    // Free memory
+    free(searchEntry->key);
+    free(searchEntry->value);
+    free(searchEntry);
+
     return STATUS_OK;
 }
 

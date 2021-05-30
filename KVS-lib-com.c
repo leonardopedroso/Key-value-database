@@ -15,6 +15,9 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
     if(write(clientSock,&msgId,sizeof(int))<=0){
         return QUERY_COM_ERROR;
     }
+    #ifdef DEBUG_COM
+    printf("Sent msg id: %d.\n",msgId);
+    #endif
     int strLen;
     // str1 = NULL if a second argument is not sent
     if(str1 != NULL){
@@ -23,15 +26,24 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         if(write(clientSock,&strLen,sizeof(int))<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent len1: %d.\n",strLen);
+        #endif
         // 3. Write first string
         if(write(clientSock,str1,strLen)<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent str1: %s.\n",str1);
+        #endif
     }else{
         strLen = 0;
         if(write(clientSock,&strLen,sizeof(int))<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent len1: %d.\n",strLen);
+        #endif
     }
     // str2 = NULL if a second argument is not sent
     if(str2 != NULL){
@@ -39,15 +51,24 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         if(write(clientSock,&len2,sizeof(uint64_t))<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent len2: %llu.\n",len2);
+        #endif
         // 5. Write second string
         if(write(clientSock,str2,len2)<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent str2: %s.\n",str2);
+        #endif
     }else{
         len2 = 0;
         if(write(clientSock,&len2,sizeof(uint64_t))<=0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent len2: %llu.\n",len2);
+        #endif
     }
     // 6. Read status message
     int status;

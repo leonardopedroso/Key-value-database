@@ -7,6 +7,7 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
         return RCV_QUERY_COM_ERROR;
     }
     #ifdef DEBUG_COM
+    printf(" == New query received == \n");
     printf("Reveived msg id: %d.\n",*msgId);
     #endif
     // 2. Receive length of first argument 
@@ -17,26 +18,28 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
     #ifdef DEBUG_COM
     printf("Reveived len1: %d.\n",strLen);
     #endif
-    // 3. Read first argument 
-    *str1 = (char * ) malloc(strLen); //Allocate memory for first string
-    // Catch allocation error
-    if (*str1 == NULL){
-        fprintf(stderr,"Recive query failed: Allocation error.");
-        return RCV_QUERY_ALLOC_ERROR;
-    }
-    int bytesToRead,nbytes; 
-    bytesToRead = strLen;
-    while(bytesToRead > 0){
-        nbytes = read(clientSock,*str1+strLen-bytesToRead,bytesToRead);
-        if(nbytes <= 0){
-            return RCV_QUERY_COM_ERROR;
-        }else{
-            bytesToRead -= nbytes;
+    if(strLen != 0){
+        // 3. Read first argument 
+        *str1 = (char * ) malloc(strLen); //Allocate memory for first string
+        // Catch allocation error
+        if (*str1 == NULL){
+            fprintf(stderr,"Recive query failed: Allocation error.");
+            return RCV_QUERY_ALLOC_ERROR;
         }
+        int bytesToRead,nbytes; 
+        bytesToRead = strLen;
+        while(bytesToRead > 0){
+            nbytes = read(clientSock,*str1+strLen-bytesToRead,bytesToRead);
+            if(nbytes <= 0){
+                return RCV_QUERY_COM_ERROR;
+            }else{
+                bytesToRead -= nbytes;
+            }
+        }
+        #ifdef DEBUG_COM
+        printf("Reveived str1: %s.\n",*str1);
+        #endif
     }
-    #ifdef DEBUG_COM
-    printf("Reveived str1: %s.\n",*str1);
-    #endif
     // 3. Receive length of second argument 
     if(read(clientSock,len2,sizeof(uint64_t))<= 0){
         return RCV_QUERY_COM_ERROR;
@@ -55,9 +58,9 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
             return RCV_QUERY_ALLOC_ERROR;
         }
         int bytesToRead,nbytes; 
-        bytesToRead = strLen;
+        bytesToRead = *len2;
         while(bytesToRead > 0){
-            nbytes = read(clientSock,*str2+strLen-bytesToRead,bytesToRead);
+            nbytes = read(clientSock,*str2+*len2-bytesToRead,bytesToRead);
             if(nbytes <= 0){
                 // In the event of an error free located memory
                 free(*str1);
@@ -72,7 +75,7 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
         #endif
     }
     #ifdef DEBUG_COM
-    printf("Exited rcvQueryKVSLocalServer.\n");
+    printf(" == Full query received == \n");
     #endif
     return RCV_QUERY_SUCCESS;
 }

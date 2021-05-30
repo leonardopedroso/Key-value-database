@@ -1,7 +1,7 @@
 #ifndef KVS_LIB_COM_H
 #define KVS_LIB_COM_H
 
-//#define DEBUG_COM
+#define DEBUG_COM
 
 #include <stdlib.h>
 #include <stdio.h>

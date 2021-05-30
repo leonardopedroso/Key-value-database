@@ -33,7 +33,7 @@ int main(){
     
     // ---------- Listen to incoming connections ----------
     // Catch error listening to connections
-    if( listen(server_sock,KVS_LOCAL_SERVER_BACKLOG) == -1){
+    if(listen(server_sock,KVS_LOCAL_SERVER_BACKLOG) == -1){
         perror("Error listening to incoming connections");
         exit(-1);
     }
@@ -151,6 +151,7 @@ int main(){
                 break;
         }
     }
+    exit(0);
 }
 
 // ---------- KVS Server thread function ----------
