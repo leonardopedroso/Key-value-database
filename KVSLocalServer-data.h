@@ -46,6 +46,7 @@ void groupClear();
 
 int groupAddEntry(struct clientStruct * client, char * key, char * value);
 int groupReadEntry(struct clientStruct * client, char * key, char ** val, uint64_t * valLen);
+int groupDeleteEntry(struct clientStruct * client, char * key);
 
 // ---------- Auxiliary functions ----------
 void entriesDelete(GROUP * group);

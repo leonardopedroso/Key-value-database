@@ -86,6 +86,27 @@ int get_value(char * key, char ** value){
     }
 }
 
+int delete_value(char * key){
+    // Send put value request
+    int status = queryKVSLocalServer(MSG_ID_DEL_VAL,key,NULL,0,NULL,NULL);
+    switch(status){
+        case QUERY_OK:
+            return SUCCESS; 
+        case QUERY_ERROR_DISCONNECTED_SOCK:
+            return ERROR_DISCONNECTED_SOCK;
+        case QUERY_ACCSS_DENIED:
+            return ERROR_ACCSS_DENIED;
+        case QUERY_GROUP_DSN_EXIST:
+            return ERROR_GROUP_DSNT_EXIST;
+        case QUERY_ALLOC_ERROR:
+            return ERROR_ALLOC;
+        case QUERY_COM_ERROR:
+            return ERROR_COM_SERVER;
+        default:
+            return ERROR_COM_SERVER;
+    }
+}
+
 int close_connection(){
     // Send disconnection request
     int status = queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL,0, NULL,NULL);

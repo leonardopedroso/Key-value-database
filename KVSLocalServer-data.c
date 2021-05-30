@@ -285,6 +285,41 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
     return STATUS_OK;
 }
 
+int groupDeleteEntry(struct clientStruct * client, char * key){
+    // [READ LOCK AuthClient]
+    // 1. Check if the authorized group address is valid 
+    if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        // [READ UNLOCK AuthClient]
+        return STATUS_ACCSS_DENIED;
+    }
+    // 2. Add value
+    ENTRY * prev = NULL;
+    // [WRITE LOCK ENTRIES] 
+    ENTRY * searchEntry = client->authGroup->entries;
+    while(1){
+        // If end of the list is reached
+        if (searchEntry == NULL){
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            return STATUS_GROUP_DSN_EXIST;
+        }
+        // If key is found
+        if(strcmp(searchEntry->key,key)==0){
+            if(prev == NULL){
+                client->authGroup->entries = searchEntry->prox;
+            }else{
+                prev->prox = searchEntry->prox;
+            }
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            break;
+        }
+        prev = searchEntry;
+        searchEntry = searchEntry->prox;
+    }
+    return STATUS_OK;
+}
+
 void groupClear(){
     // Allocate pointer to group list
     GROUP * prev = NULL;

@@ -32,6 +32,18 @@ int main(){
     printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
     free(out);
 
+    if(delete_value(key1)!=0){
+        printf("Delete value error.\n");
+    }
+    printf("Test set 1 | Deleye | Key: %s\n",key1);
+
+    if(get_value(key1,&out)!=0){
+        printf("GEt value error.\n");
+    }else{
+        printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
+        free(out);
+    }
+    
     getchar();
 
     char key2[10] = "key2";

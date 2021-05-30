@@ -65,6 +65,14 @@ void * KVSLocalServerClientThread(void * client){
                 break;
             }
             case MSG_ID_DEL_VAL:
+                // Output status to msgId just to avoid allocating another variable
+                // Cannot send group poiter as argument beacause it may loose validy 
+                // Group acess as to be check inside read lock entries
+                free(buffer2);
+                msgId = groupDeleteEntry((CLIENT *) client,buffer1);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
+                free(buffer1);
+                break;
         
                 break;
             case MSG_ID_REG_CB:
