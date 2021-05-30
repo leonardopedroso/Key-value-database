@@ -18,7 +18,7 @@ typedef struct clientStruct{
     struct timespec connTime; // -> to date with struct tm *my_tm = localtime(&ts.tv_sec);
     int connectivityStatus;
     int PID;
-    GROUP * authGroup;
+    struct groupStruct * authGroup;
     
     struct clientStruct * prox;
 }CLIENT;
@@ -37,7 +37,7 @@ void clientAdd(CLIENT * client);
 
 int clientAuth(CLIENT * client, char * groupId, char * secret);
 
-void clientDeleteAccessGroup(GROUP * groupPtr);
+void clientDeleteAccessGroup(struct groupStruct * groupPtr);
 
 int clientDisconnect(CLIENT * client);
 

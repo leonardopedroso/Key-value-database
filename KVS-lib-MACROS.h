@@ -10,9 +10,11 @@
 #define MSG_ID_CLOSE_CONN -5
 
 // ---------- Query status ----------
+#define STATUS_OK_W_ARG 1
 #define STATUS_OK 0
 #define STATUS_ACCSS_DENIED -1
 #define STATUS_GROUP_DSN_EXIST -2
+#define STATUS_ALLOC_ERROR -3
 
 // ---------- Connectivity ----------
 #define DISCONNECTED_SOCKET -1

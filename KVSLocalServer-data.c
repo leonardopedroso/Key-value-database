@@ -1,5 +1,5 @@
 #include "KVSLocalServer-data.h" // Include header
-#include "KVSLocalServer-client.h"
+
 
 // ---------- Global variables ----------
 GROUP * groups = NULL; // Pointer to the first element of the linked list of groups 
@@ -185,6 +185,104 @@ int groupShow(char * groupId){
     printf("Group id: %s | Secret: %s | Number of key-value pairs: %d\n",groupId,secret,numberOfEntries);
     free(secret); // Free allocated memory
     return GROUP_OK;
+}
+
+int groupAddEntry(CLIENT * client, char * key, char * value){
+    //0. Allocate Entry block just in case  (to avoid doing it in the write lock)
+    ENTRY * newEntry = (ENTRY * ) malloc(sizeof(ENTRY));
+    newEntry->key = key;
+    newEntry->value = value;
+    newEntry->prox = NULL;
+    if(newEntry == NULL){
+        // [READ UNLOCK AuthClient]
+        // Free memory on error
+        free(key);
+        free(value);
+        return STATUS_ALLOC_ERROR;
+    }
+    // Allocate auxiliar pointer
+    char * aux;
+
+    // [READ LOCK AuthClient]
+    // 1. Check if the authorized group address is valid 
+    if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        // [READ UNLOCK AuthClient]
+        // Free memory on error
+        free(key);
+        free(value);
+        return STATUS_ACCSS_DENIED;
+    }
+    // 2. Add value
+    ENTRY * prev = NULL;
+    // [WRITE LOCK ENTRIES] 
+    ENTRY * searchEntry = client->authGroup->entries;
+    while(1){
+        // If end of the list is reached
+        if (searchEntry == NULL){
+            if(prev == NULL){
+                client->authGroup->entries = newEntry;
+            }else{
+                prev->prox = newEntry;
+            }
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            break;
+        }
+        // If key is found
+        if(strcmp(searchEntry->key,key)==0){
+            aux = searchEntry->value;
+            searchEntry->value = value;
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            free(aux); // free previous value
+            free(key); // free received key
+            free(newEntry); // free entry allocated just in case
+            break;
+        }
+        prev = searchEntry;
+        searchEntry = searchEntry->prox;
+    }
+    return STATUS_OK;
+    
+}
+
+int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
+    // [READ LOCK AuthClient]
+    // 1. Check if the authorized group address is valid 
+    if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
+        // [READ UNLOCK AuthClient]
+        // Free memory on error
+        return STATUS_ACCSS_DENIED;
+    }
+    // 2. Seach key
+    ENTRY * prev = NULL;
+    // [READ LOCK ENTRIES] 
+    ENTRY * searchEntry = client->authGroup->entries;
+    while(1){
+        // If end of the list is reached
+        if (searchEntry == NULL){
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            return STATUS_GROUP_DSN_EXIST;
+        }
+        // If key is found
+        if(strcmp(searchEntry->key,key)==0){
+            *valLen = strlen(searchEntry->value)+1;
+            *val = (char *) malloc(*valLen);
+            if(*val == NULL){
+                // [WRITE UNLOCK ENTRIES]
+                // [READ UNLOCK AuthClient]
+                return STATUS_ALLOC_ERROR;
+            }
+            strcpy(*val,searchEntry->value);
+            // [WRITE UNLOCK ENTRIES]
+            // [READ UNLOCK AuthClient]
+            break;
+        }
+        prev = searchEntry;
+        searchEntry = searchEntry->prox;
+    }
+    return STATUS_OK;
 }
 
 void groupClear(){

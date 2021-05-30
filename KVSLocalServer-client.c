@@ -1,5 +1,4 @@
 #include "KVSLocalServer-client.h"
-#include "KVSLocalServer-data.h"
 
 // ---------- Global variables ----------
 CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
@@ -42,12 +41,29 @@ void * KVSLocalServerClientThread(void * client){
         switch(msgId){
             case MSG_ID_PUT_VAL:
                 // Output status to msgId just to avoid allocating another variable
-                //msgId = groupAddEntry(client->);
-
+                // Cannot send group poiter as argument beacause it may loose validy 
+                // Group acess as to be check inside read lock entries
+                //printf("Put value | key: %s | value %s\n",buffer1,buffer2);
+                msgId = groupAddEntry((CLIENT *) client,buffer1,buffer2);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
+                // Memory on buffer1 and buffer2 is not freed because it is used as the memory allocated for the key value pair
+                // On error buffer1 and buffer2 are freed inside groupAddEntry
                 break;
-            case MSG_ID_GET_VAL:
-        
+            case MSG_ID_GET_VAL:{
+                // Output status to msgId just to avoid allocating another variable
+                // Cannot send group poiter as argument beacause it may loose validy 
+                // Group acess as to be check inside read lock entries
+                free(buffer2);
+                char * val = NULL;
+                uint64_t valLen = 0;
+                //printf("Read value | key: %s \n",buffer1);
+                msgId = groupReadEntry((CLIENT *) client,buffer1,&val,&valLen);
+                //printf("Read value | value: %s | len: %llu \n",val,valLen);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,val,valLen);
+                free(val);
+                free(buffer1);
                 break;
+            }
             case MSG_ID_DEL_VAL:
         
                 break;
@@ -61,15 +77,23 @@ void * KVSLocalServerClientThread(void * client){
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
                 // [CUIDADO QUANDO TIVER O CALLBACK]
                 close(((CLIENT *)client)->clientSocket);
+                // Free memory allocated in this query (note that buffer2 may be NULL)
+                // It is only guaranteed that buffer2 does not have an invalid address
+                free(buffer1);
+                free(buffer2);
                 pthread_exit(NULL); // Close KVSServerThread
                 break;
             default:
+                printf("Received something strange.\n");
+                // Free memory allocated in this query (note that buffer2 may be NULL)
+                // It is only guaranteed that buffer2 does not have an invalid address
+                free(buffer1);
+                free(buffer2);
                 break;
         }
-        // Free memory allocated in this query (note that buffer2 may be NULL)
-        // It is only guaranteed that buffer2 does not have an invalid address
-        free(buffer1);
-        free(buffer2);
+       
+        
+        
     }
 }
 
@@ -162,28 +186,16 @@ int clientDisconnect(CLIENT * client){
 }
 
 int clientShow(){
-    
     printf("Client list:\n");
     // Differentiate between connected and disconnected clients
     int flagConnectivity = CONN_STATUS_CONNECTED;
     // [IN MUTEX client region]
     CLIENT * searchPointer = clients;
     // Iterate through the clients
+    printf("---------- Connected clients ----------\n");
     while(searchPointer != NULL){
-        switch (flagConnectivity){
-        case CONN_STATUS_CONNECTED:
-            printf("---------- Connected clients ----------\n");
-            break;
-        case CONN_STATUS_NOT_AUTH:
-            printf("---------- Clients waiting authentication ----------\n");
-            break;
-        case CONN_STATUS_DISCONNECTED:
-            printf("---------- Disconnected clients ----------\n");
-            break;
-        }
         if(searchPointer->connectivityStatus == flagConnectivity){
             printf("PID: %d | ",searchPointer->PID);
-            
             struct tm *info;
             info = localtime(&(searchPointer->connTime.tv_sec));
             if(flagConnectivity == CONN_STATUS_CONNECTED || flagConnectivity == CONN_STATUS_NOT_AUTH){
@@ -194,14 +206,17 @@ int clientShow(){
         }
         // Next element on the list 
         searchPointer = searchPointer->prox;
+        fflush(stdout);
         if(searchPointer == NULL){
             switch (flagConnectivity){
             case CONN_STATUS_CONNECTED:
                 flagConnectivity = CONN_STATUS_NOT_AUTH;
+                printf("---------- Clients waiting authentication ----------\n");
                 searchPointer = clients;
                 break;
             case CONN_STATUS_NOT_AUTH:
                 flagConnectivity = CONN_STATUS_DISCONNECTED;
+                printf("---------- Disconnected clients ----------\n");
                 searchPointer = clients;
                 break;
             default:
@@ -247,9 +262,9 @@ void clientDeleteAccessGroup(GROUP * groupPtr){
             searchPointer->connectivityStatus = CONN_STATUS_NOT_AUTH;
             // Clear group access  
             // !!!!!!!! MAYBE INTERRUPT MUTEX client region here]
-            // [WRITE LOCK ENTRIES]
+            // [MUTEX IN AuthGroup]
             searchPointer->authGroup = NULL;
-            // [WRITE UNLOCK ENTRIES]
+            // [MUTEX OUT AuthGroup]
             // Define disconnection time
             if(clock_gettime(CLOCK_REALTIME, &(searchPointer->connTime)) == -1 ) {
                 perror("Clock gettime error");

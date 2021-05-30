@@ -1,6 +1,8 @@
 #ifndef KVS_LIB_COM_H
 #define KVS_LIB_COM_H
 
+//#define DEBUG_COM
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h> // to open, close, read

@@ -18,6 +18,42 @@ int main(){
             break;
     }
 
+    char * out;
+
+    char key1[10] = "key1";
+    char val1[10] = "val1";
+    if(put_value(key1,val1)!=0){
+        printf("Put value error %lu.\n", strlen(key1)+1);
+    }
+    printf("Test set 1 | Write | Key: %s | Value: %s\n",key1,val1);
+    if(get_value(key1,&out)!=0){
+        printf("GEt value error.\n");
+    }
+    printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
+    free(out);
+
+    getchar();
+
+    char key2[10] = "key2";
+    char val2[10] = "val2";
+    if(put_value(key2,val2)!=0){
+        printf("Put value error.\n");
+    }
+    printf("Test set 2 | Write | Key: %s | Value: %s\n",key2,val2);
+    if(get_value(key2,&out)!=0){
+        printf("Get value error.\n");
+    }
+    printf("Test set 2 | Read | Key: %s | Value: %s\n",key2,out);
+    free(out);
+    
+
+    /*char key3[10] = "key3";
+    char val3[10] = "val3";
+    printf("Test set 3 | Write | Key: %s | Value: %s\n",key3,val3);*/
+
+
+
+
     getchar();
 
 
@@ -26,7 +62,5 @@ int main(){
     }else{
         printf("Close connection error.\n");
     }
-    fflush(stdout);
-    getchar();
     exit(0);
 }

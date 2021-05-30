@@ -24,7 +24,10 @@
 #define ERROR_DISCONNECTED_SOCK -103
 
 int establish_connection (char * group_id, char * secret);
+
 int put_value(char * key, char * value);
+int get_value(char * key, char ** value);
+
 int close_connection();
 
 

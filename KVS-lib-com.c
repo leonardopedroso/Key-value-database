@@ -54,24 +54,33 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
     if(read(clientSock,&status,sizeof(int))<= 0){
         return QUERY_COM_ERROR;
     }
+    #ifdef DEBUG_COM
+    printf("Received status %d.\n",status);
+    #endif
 
     // 7. If response contains string response read it,
-    int bytesToRead,nbytes; 
+    uint64_t bytesToRead,nbytes; 
     if(status > 0){
         // Read size of response 
         if(read(clientSock,len3,sizeof(uint64_t))<= 0){
             return QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Reveived len3: %llu.\n",*len3);
+        #endif
         *str3 = (char * ) malloc(*len3);
-        bytesToRead = status;
+        bytesToRead = *len3;
         while(bytesToRead > 0){
-            nbytes = read(clientSock,*str3+status-bytesToRead,bytesToRead);
+            nbytes = read(clientSock,*str3+*len3-bytesToRead,bytesToRead);
             if(nbytes <= 0){
                 return QUERY_COM_ERROR;
             }else{
                 bytesToRead -= nbytes;
             }
         }
+        #ifdef DEBUG_COM
+        printf("Reveived str3: %s.\n",*str3);
+        #endif
     }
     if(msgId == MSG_ID_CLOSE_CONN){
         close(clientSock);
@@ -81,10 +90,14 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
     switch(status){
     case STATUS_OK:
         return QUERY_OK;
+    case STATUS_OK_W_ARG:
+        return QUERY_OK;
     case STATUS_ACCSS_DENIED:
         return QUERY_ACCSS_DENIED;
     case STATUS_GROUP_DSN_EXIST:
         return QUERY_GROUP_DSN_EXIST;
+    case STATUS_ALLOC_ERROR:
+        return QUERY_ALLOC_ERROR;
     default:
         return QUERY_COM_ERROR;
     }
