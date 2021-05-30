@@ -18,7 +18,7 @@ typedef struct clientStruct{
     struct timespec connTime; // -> to date with struct tm *my_tm = localtime(&ts.tv_sec);
     int connectivityStatus;
     int PID;
-    GROUP * authGroup;
+    struct groupStruct * authGroup;
     
     struct clientStruct * prox;
 }CLIENT;
@@ -35,17 +35,15 @@ int clientHandle(int sockClient);
 
 void clientAdd(CLIENT * client);
 
-int clientAuth(CLIENT * client);
+int clientAuth(CLIENT * client, char * groupId, char * secret);
+
+void clientDeleteAccessGroup(struct groupStruct * groupPtr);
 
 int clientDisconnect(CLIENT * client);
 
 int clientShow();
 
-// REDO below
-// [IMPLEMENT manageClients to avoid synch problems]
-// [TODAS AS ACOES QUE ALTEREM A MEMORIA DA LISTA DE CLIENTES TEM DE PASSAR PELA FUNÇAO manageClients]
-//void manageClients(int action,...)
-/*void closeClient(CLIENT * client);
 void closeClients();
-*/
+
+
 #endif

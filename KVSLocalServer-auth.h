@@ -8,7 +8,7 @@
 
 // Podem retornar 
 #define AUTH_OK 0
-#define AUTH_GOUP_DSN_EXIST -1
+#define AUTH_GROUP_DSN_EXIST -1
 #define AUTH_ALLOC_ERROR -2
 #define AUTH_GROUP_ALREADY_EXISTS -3
 
@@ -22,3 +22,4 @@ int authDeleteGroup(char * group);
 
 
 #endif
+

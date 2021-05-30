@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> // to manipulate strings
+#include "KVS-lib-MACROS.h"
+#include "KVSLocalServer-client.h"
 #include "KVSLocalServer-auth.h"
+
 
 // Struct to hold key-value pairs
 typedef struct entryStruct{
@@ -39,6 +42,11 @@ typedef struct groupStruct{
 int groupAdd(char * group);
 int groupDelete(char * group);
 int groupShow(char * group);
+void groupClear();
+
+int groupAddEntry(struct clientStruct * client, char * key, char * value);
+int groupReadEntry(struct clientStruct * client, char * key, char ** val, uint64_t * valLen);
+int groupDeleteEntry(struct clientStruct * client, char * key);
 
 // ---------- Auxiliary functions ----------
 void entriesDelete(GROUP * group);

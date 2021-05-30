@@ -54,3 +54,7 @@ int authDeleteGroup(char * group){
     return AUTH_OK;
 
 }
+
+
+//int authent´icate(char * group, char * secret);
+//returns 
