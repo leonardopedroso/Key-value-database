@@ -3,6 +3,7 @@
         "kvsauthserver-com.h": "c",
         "types.h": "c",
         "kvsauthserver-data.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stdio.h": "c"
     }
 }

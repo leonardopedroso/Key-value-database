@@ -12,4 +12,4 @@ KVSAuthServer.o: KVSAuthServer.c KVSAuthServer-com.o KVSAuthServer-data.o
 	gcc $(CFLAGS) -c KVSAuthServer.c
 
 KVSAuthServer: KVSAuthServer.o
-	gcc $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o KVSAuthServer-com.o -o KVSAuthServer
+	gcc $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o KVSAuthServer-com.o -o KVSAuthServer -lpthread

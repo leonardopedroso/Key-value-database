@@ -108,6 +108,6 @@ int authDeleteGroup(char * group);
 // \param secret pointer to memory to where the secret should be copied
 // \return may return AUTH_OK, AUTH_GROUP_DSN_EXIST, AUTH_IMPOSSIBLE_SERVER, 
 // AUTH_SENDING, AUTH_RECEIVING, and AUTH_INVALID
-int authGetSecret(char * group, char ** secret);
+int authGetSecret(char * group, char * secret);
 
 #endif

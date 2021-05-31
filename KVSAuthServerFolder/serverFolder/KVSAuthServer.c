@@ -5,9 +5,22 @@
 #include "KVSAuthServer-com.h"
 #include "KVSAuthServer-data.h"
 
+int sfd;    // fd of server socket
+
+// when Ctrl-C is pushed, the socket is closed which will result in errors
+// in the recvfrom and sendto functions therefore shutting down the program
+void controlCHandler(int arg){
+    close(sfd);
+}
+
 int main(void){
-    int sfd;                    // fd of server socket
+    PAIR *head = NULL;          // head of the list of PAIRS
     struct sockaddr_in svaddr;  // struct addr of sever socket
+    REQUEST req;
+    ANSWER ans;
+    int aux;
+    struct sockaddr_in claddr;
+    socklen_t len;
 
     switch(createServerSocket(&sfd,&svaddr)){
         case SUCCESS:
@@ -24,14 +37,10 @@ int main(void){
             fprintf(stderr,"Error binding socket\nShutting down\n");
             return 0;
     }
-    printf("\n");
-
-    PAIR *head = NULL;  // head of the list of PAIRS
-    REQUEST req;
-    ANSWER ans;
-    int aux;
-    struct sockaddr_in claddr;
-    socklen_t len;
+    
+    // if the execution continues explains how to exit the program
+    printf("Press Ctrl+C to exit\n\n");
+    signal(SIGINT,controlCHandler);
 
     while(1){
         // before usign recvfrom len shall always be initalized
@@ -41,7 +50,11 @@ int main(void){
             (struct sockaddr*)&claddr,&len);
         // if an error happens while receiving we shutdown the server
         if(aux == -1){
-            fprintf(stderr,"Error in recvfrom\nShutting down\n");
+            fprintf(stderr,"\nShutting down\n");
+            // even if the error was due to the socket being closed, this will
+            // not result in a problem, it will just return an error
+            close(sfd);
+            deleteAllPairs(&head);
             break;
         }
         if(aux != sizeof(REQUEST)){
@@ -110,7 +123,12 @@ int main(void){
             aux = sendto(sfd,&ans,sizeof(ANSWER),0,(struct sockaddr*)&claddr,
                 sizeof(struct sockaddr_in));
             if(aux == -1){
-                fprintf(stderr,"Errors in sending a datagram\n");
+                fprintf(stderr,"\nShutting down\n");
+                // even if the error was due to the socket being closed, this
+                // will not result in a problem, it will just return an error
+                close(sfd);
+                deleteAllPairs(&head);
+                break;
             } else if(aux != sizeof(ANSWER)){
                 fprintf(stderr,"Could not send the complete datagram\n");
             }
@@ -119,9 +137,4 @@ int main(void){
         // to divide the log of each request
         printf("\n");
     }
-
-    deleteAllPairs(&head);
-    close(sfd);
-    
-    return 0;
 }

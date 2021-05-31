@@ -20,7 +20,16 @@ int main(void){
     secret = (char*)calloc(MAX_SECRET_LEN,sizeof(char));
     
     printf("%d\n",authCreateGroup("ana","mae"));
+    printf("%d\n",authCreateGroup("ana","mae"));
     printf("%d\n",authCreateGroup("ana","temari"));
+    
+    printf("%d %s\n",authGetSecret("ana",secret),secret);
+    printf("%d\n",authDeleteGroup("ana"));
+    printf("%d %s\n",authGetSecret("ana",secret),secret);
+    
+    printf("%d\n",authDeleteGroup("ze"));
+    printf("%d\n",authCreateGroup("ze","filho"));
+    printf("%d\n",authDeleteGroup("ze"));
     
     free(secret);
     endCom();

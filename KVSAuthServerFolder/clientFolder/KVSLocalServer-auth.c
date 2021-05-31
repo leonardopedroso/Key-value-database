@@ -221,7 +221,7 @@ int authDeleteGroup(char *group){
     ANSWER ans;
 
     // creates the request
-    req.code = REQ_CREATE;
+    req.code = REQ_DELETE;
     strcpy(req.group,group);
     memset(req.secret,'\0',MAX_SECRET_LEN);
     
@@ -246,12 +246,12 @@ int authDeleteGroup(char *group){
     }
 }
 
-int authGetSecret(char * group, char ** secret){
+int authGetSecret(char * group, char * secret){
     REQUEST req;
     ANSWER ans;
 
     // creates the request
-    req.code = REQ_CREATE;
+    req.code = REQ_SECRET;
     strcpy(req.group,group);
     memset(req.secret,'\0',MAX_SECRET_LEN);
     
@@ -268,7 +268,7 @@ int authGetSecret(char * group, char ** secret){
     // codes of this part of the project
     switch(ans.code){
         case ANS_OK:
-            strcpy(*secret,ans.secret);
+            strcpy(secret,ans.secret);
             return AUTH_OK;
         case ANS_GROUP_DSN_EXIST:
             return AUTH_GROUP_DSN_EXIST;
