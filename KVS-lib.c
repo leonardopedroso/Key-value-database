@@ -1,7 +1,7 @@
 #include "KVS-lib.h" // include header
+#include "KVS-lib-base.h" // Include base header
 #include "KVS-lib-com.h"
 #include "KVS-lib-cb.h"
-#include "KVS-lib-MACROS.h"
 
 // ---------- Global variables ----------
 // Communication with KVS Local Server
@@ -22,7 +22,7 @@ int establish_connection (char * group_id, char * secret){
     // Ignore socket disconnection signal from client, which is handled when read/write returns -1
     signal(SIGPIPE, SIG_IGN); 
     // Catch errors creating socket
-    if (clientSock == -1){
+    if (clientSock == DISCONNECTED_SOCKET){
         perror("Error creating socket");
         return ERROR_CREATING_SOCK;
     }
@@ -42,11 +42,11 @@ int establish_connection (char * group_id, char * secret){
 
     // Setup server socket ----------
     cb_sock[0] = socket(AF_UNIX, SOCK_STREAM, 0); // create server socket
-    cb_sock[1] = -1; // init value of connection socket
+    cb_sock[1] = DISCONNECTED_SOCKET; // init value of connection socket
     // Ignore socket disconnection signal from client, which is handled when read/write returns -1
     signal(SIGPIPE, SIG_IGN); 
     // Catch error creating reception socket
-    if (cb_sock[0] == -1){
+    if (cb_sock[0] == DISCONNECTED_SOCKET){
         perror("Error creating callback socket");
         return ERROR_CALLBACK_SOCK;
     }
@@ -162,6 +162,40 @@ int delete_value(char * key){
             return ERROR_ACCSS_DENIED;
         case QUERY_GROUP_DSN_EXIST:
             return ERROR_GROUP_DSNT_EXIST;
+        case QUERY_ALLOC_ERROR:
+            return ERROR_ALLOC;
+        case QUERY_COM_ERROR:
+            return ERROR_COM_SERVER;
+        default:
+            return ERROR_COM_SERVER;
+    }
+}
+
+int register_callback(char * key, void (*callback_function)(char *)){
+    // Check if callback server is up and running
+    if(cb_sock[1]==DISCONNECTED_SOCKET){
+        return ERROR_CALLBACK_COM_ERROR;
+    }
+    // Add to callback list and find callback id in the aplication
+    int cb_id = callbackAdd(key,callback_function);
+    if (cb_id < 0){ // Catch error 
+        switch (cb_id){
+        case CALLBACK_ALLOC_ERROR:
+            return ERROR_ALLOC;
+        default:
+            return ERROR_CALLBACK_COM_ERROR;
+        }
+    }
+    // Send regiter callback request
+    // Callback id is sent as a byte stream
+    int status = queryKVSLocalServer(MSG_ID_REG_CB,key,(char*)&cb_id,sizeof(int),NULL,NULL);
+    switch(status){
+        case QUERY_OK:
+            return SUCCESS; 
+        case QUERY_ERROR_DISCONNECTED_SOCK:
+            return ERROR_DISCONNECTED_SOCK;
+        case QUERY_ACCSS_DENIED:
+            return ERROR_ACCSS_DENIED;
         case QUERY_ALLOC_ERROR:
             return ERROR_ALLOC;
         case QUERY_COM_ERROR:

@@ -1,6 +1,9 @@
 #ifndef KVS_LIB_MACROS_H
 #define KVS_LIB_MACROS_H
 
+// Define server parameters
+#define KVS_LOCAL_SERVER_ADDR "/tmp/KVSLocalServer"
+
 // ---------- Query identification ----------
 #define MSG_ID_ESTBL_CONN 0 // positive numbers
 #define MSG_ID_PUT_VAL -1

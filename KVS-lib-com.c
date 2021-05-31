@@ -1,3 +1,4 @@
+#include "KVS-lib-base.h" // Include base header
 #include "KVS-lib-com.h"
 
 // ---------- Global variables ----------
@@ -124,7 +125,3 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
     }
 }
 
-
-int rcvCallback(int * cb_id, char ** value, uint64_t * valLen){
-    return RCV_CALLBACK_OK;
-}

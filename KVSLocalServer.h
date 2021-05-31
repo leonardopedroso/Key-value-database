@@ -12,9 +12,7 @@
 #include "KVS-lib-MACROS.h" // Shared MACROS
 
 // Define server parameters
-#define KVS_LOCAL_SERVER_ADDR "/tmp/KVSLocalServer"
 #define KVS_LOCAL_SERVER_BACKLOG 5
-
 
 
 // ---------- KVS Server thread prototypes ----------
