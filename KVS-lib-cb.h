@@ -1,7 +1,6 @@
 #ifndef KVS_LIB_CB_H
 #define KVS_LIB_CB_H
 
-#define MAX_LEN_CN_SERVER_ADDR 100
 #define CB_SERVER_BACKLOG 1
 
 #define DEBUG_CALLBACK 

@@ -1,5 +1,5 @@
+#include "KVSLocalServer-base.h"
 #include "KVSLocalServer-com.h"
-
 
 int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** str2, uint64_t * len2){
     // 1. Receive msg identification corresponding to authentication

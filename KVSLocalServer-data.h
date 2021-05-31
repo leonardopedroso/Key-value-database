@@ -1,14 +1,7 @@
 #ifndef KVS_LOCAL_SERVER_DATA_H
 #define KVS_LOCAL_SERVER_DATA_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h> // to manipulate strings
-#include <pthread.h> // to use threads
-#include <time.h>
-#include "KVS-lib-MACROS.h"
-#include "KVSLocalServer-auth.h"
-
+#include "KVSLocalServer-base.h"
 
 // Struct to hold key-value pairs
 typedef struct entryStruct{
@@ -33,17 +26,21 @@ typedef struct groupStruct{
 
 // Struct to hold clients
 typedef struct clientStruct{
+    // Connection
     int clientSocket;
+    int PID;
     pthread_t clientThread;
     struct timespec connTime; // -> to date with struct tm *my_tm = localtime(&ts.tv_sec);
     int connectivityStatus;
-    int PID;
-
+    // Callback
+    int cb_sock;
+    // Data access
     struct groupStruct * authGroup;
     pthread_mutex_t authGroup_mtx; // To protect access to client->authGroup
-    
+    // List links
     struct clientStruct * prox;
 }CLIENT;
+
 // Connectivity status
 #define CONN_STATUS_CONNECTED 0
 #define CONN_STATUS_DISCONNECTED 1

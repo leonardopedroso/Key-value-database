@@ -1,4 +1,7 @@
 #include "KVSLocalServer.h" // Header
+#include "KVSLocalServer-data.h" // Data management functions
+#include "KVSLocalServer-client.h" // Client management functions
+#include "ui.h" // User interface
 
 // ---------- Global variables ----------
 int shutdownPipeFd;

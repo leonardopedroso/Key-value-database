@@ -1,14 +1,7 @@
 #ifndef KVS_LOCAL_SERVER_COM_H
 #define KVS_LOCAL_SERVER_COM_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h> // to open, close, read
-#include <sys/socket.h> // to use sockets
-#include <sys/un.h> // to use unix domain sockets
-#include <string.h> // to use strcpy
-#include <stdint.h>
-#include "KVS-lib-MACROS.h"
+#include "KVSLocalServer-base.h"
 
 //#define DEBUG_COM
 
