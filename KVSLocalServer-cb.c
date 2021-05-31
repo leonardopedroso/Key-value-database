@@ -14,6 +14,9 @@ void callbackConnect(CLIENT * client){
         fprintf(stderr,"Error creating callbak socket for client PID: %d.\n",client->PID);
         return;
     }
+    #ifdef DEBUG_CALLBACK
+    printf("Created callback socket of client PID: %d.\n",client->PID);
+    #endif
     // Setup server connection
     struct sockaddr_un cb_sock_addr;
     cb_sock_addr.sun_family = AF_UNIX;
@@ -26,4 +29,7 @@ void callbackConnect(CLIENT * client){
         client->cb_sock = DISCONNECTED_SOCKET;
         return;
     }
+    #ifdef DEBUG_CALLBACK
+    printf("Connected to callback socket of client PID: %d.\n",client->PID);
+    #endif
 }

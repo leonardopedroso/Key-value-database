@@ -24,16 +24,17 @@ void * callbackServerThread(void * arg){
     while(1){
         // ---------- Receive callback
         int * cb_id = malloc(sizeof(int));
-        if(read(cb_sock[0], cb_id, sizeof(int)) <= 0){
+        if(read(cb_sock[1], cb_id, sizeof(int)) <= 0){
             #ifdef DEBUG_CALLBACK
             printf("Callback server thread is exiting.\n");
             #endif
             close(cb_sock[0]); // Close callback socket listening to connections
             cb_sock[0] = -1;
             close(cb_sock[1]);
-            cb_sock[1] = -1;
+            cb_sock[1] = -1; 
+            free(cb_id); // Free callback id
             char cb_server_addr[MAX_LEN_CN_SERVER_ADDR];
-            sprintf(cb_server_addr,"tmp/cb%d",getpid());
+            sprintf(cb_server_addr,"/tmp/cb%d",getpid());
             remove(cb_server_addr); // Remove address
             callbackClear();
             pthread_exit(NULL);
