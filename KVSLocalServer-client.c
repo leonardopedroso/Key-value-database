@@ -17,7 +17,7 @@ void * KVSLocalServerClientThread(void * client){
     while(1){
         buffer1 = NULL;
         buffer2 = NULL;
-        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) == RCV_QUERY_COM_ERROR){
+        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) != RCV_QUERY_SUCCESS){
             // [CUIDADO QUANDO TIVER O CALLBACK]
             fprintf(stderr,"Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
             ((CLIENT *)client)->connectivityStatus = CONN_STATUS_DISCONNECTED;

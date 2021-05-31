@@ -2,8 +2,11 @@ all: client KVSLocalServer
 
 # ---------- KVS-LIB ----------
 
+
 KVS-lib-com.o: KVS-lib-com.c KVS-lib-com.h KVS-lib-MACROS.h
 	gcc -c -g KVS-lib-com.c
+KVS-lib-cb.o: KVS-lib-cb.c KVS-lib-cb.h KVS-lib-com.c
+	gcc -c -g KVS-lib-cb.c
 KVS-lib.o: KVS-lib.c KVS-lib.h KVS-lib-com.c KVS-lib-com.h
 	gcc -c -g KVS-lib.c
 
@@ -12,8 +15,8 @@ KVS-lib.o: KVS-lib.c KVS-lib.h KVS-lib-com.c KVS-lib-com.h
 client.o: client.c
 	gcc -c -g client.c
 
-client: client.o KVS-lib.o KVS-lib-com.o
-	gcc client.o KVS-lib.o KVS-lib-com.o -o client
+client: client.o KVS-lib.o KVS-lib-com.o KVS-lib-cb.o
+	gcc client.o KVS-lib.o KVS-lib-com.o KVS-lib-cb.o -o client
 	
 # ---------- LOCAL SERVER ----------
 KVSLocalServer-data.o: KVSLocalServer-data.c KVSLocalServer-data.h KVSLocalServer-client.h KVS-lib-MACROS.h

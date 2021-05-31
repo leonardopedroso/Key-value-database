@@ -21,4 +21,6 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
 #define ANS_QUERY_COM_ERROR -100
 int ansQueryKVSLocalServer(int clientSock, int status, char * str1, uint64_t len);
 
+
+
 #endif

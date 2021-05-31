@@ -22,6 +22,8 @@
 #define ERROR_CONNECTION_SERVER -101
 #define ERROR_COM_SERVER -102
 #define ERROR_DISCONNECTED_SOCK -103
+#define ERROR_ALRDY_CONNECTED_SOCK -104
+#define ERROR_CALLBACK_SOCK -105
 
 int establish_connection (char * group_id, char * secret);
 

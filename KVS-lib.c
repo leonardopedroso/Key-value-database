@@ -1,12 +1,22 @@
 #include "KVS-lib.h" // include header
 #include "KVS-lib-com.h"
+#include "KVS-lib-cb.h"
 #include "KVS-lib-MACROS.h"
 
 // ---------- Global variables ----------
+// Communication with KVS Local Server
 extern int clientSock; // client socket
-extern struct sockaddr_un server_sock_addr; // server socket address
+// Callback
+extern int cb_sock[2]; // callback socket
+extern pthread_t cbThread; // callback thread
+extern CALLBACK * callbacks;
 
 int establish_connection (char * group_id, char * secret){
+    // Check socket status
+    if (clientSock != DISCONNECTED_SOCKET){
+        return ERROR_ALRDY_CONNECTED_SOCK;
+    }
+    // ---------- Setup server connection ----------
     // Create client socket    
     clientSock = socket(AF_UNIX,SOCK_STREAM,0);
     // Ignore socket disconnection signal from client, which is handled when read/write returns -1
@@ -17,15 +27,69 @@ int establish_connection (char * group_id, char * secret){
         return ERROR_CREATING_SOCK;
     }
     // Setup server connection
+    struct sockaddr_un server_sock_addr;
     server_sock_addr.sun_family = AF_UNIX;
     strcpy(server_sock_addr.sun_path, KVS_LOCAL_SERVER_ADDR);
     if(connect(clientSock, (struct sockaddr *) &server_sock_addr, sizeof(struct sockaddr_un)) == -1){
         perror("Error connecting to server");
         return ERROR_CONNECTION_SERVER;
     }
-    // Query KVS Local server for authentication
+
+    // ---------- Setup callback socket ----------
+    // Setup server variables ----------
+    struct sockaddr_un cb_sock_addr; // struct addr of sever socket
+    cb_sock_addr.sun_family = AF_UNIX; // set socket family type
+
+    // Setup server socket ----------
+    cb_sock[0] = socket(AF_UNIX, SOCK_STREAM, 0); // create server socket
+    cb_sock[1] = -1; // init value of connection socket
+    // Ignore socket disconnection signal from client, which is handled when read/write returns -1
+    signal(SIGPIPE, SIG_IGN); 
+    // Catch error creating reception socket
+    if (cb_sock[0] == -1){
+        perror("Error creating callback socket");
+        return ERROR_CALLBACK_SOCK;
+    }
+    #ifdef DEBUG_CALLBACK
+    printf("Callback socket created.\n");
+    #endif
+    char cb_server_addr[MAX_LEN_CN_SERVER_ADDR];
+    sprintf(cb_server_addr,"/tmp/cb%d",getpid());
+
+    // Bind server socket ----------
+    // unlink server if last server session was not terminated properly
+    unlink(cb_server_addr); 
+    strcpy(cb_sock_addr.sun_path, cb_server_addr); // set socket to known address
+    // Catch error binding socket to address
+    if( bind(cb_sock[0], (struct sockaddr *) &cb_sock_addr, sizeof(struct sockaddr_un)) == -1){
+        perror("Error binding address to callback socket");
+        return ERROR_CALLBACK_SOCK;
+    }
+    #ifdef DEBUG_CALLBACK
+    printf("Callback socket binded to address %s\n",cb_sock_addr.sun_path);
+    #endif
+
+    // Listen to incoming connections ----------
+    // Catch error listening to connections
+    if(listen(cb_sock[0],CB_SERVER_BACKLOG) == -1){
+        perror("Error listening to incoming callback connection");
+        return ERROR_CALLBACK_SOCK;
+    }
+    #ifdef DEBUG_CALLBACK
+    printf("Callback socket is listening for KVS local server.\n");
+    #endif
+
+    // Start calback thread
+    pthread_create(&cbThread, NULL, &callbackServerThread, NULL);
+
+    // ---------- Query KVS Local server for authentication
     //(int msgId, char * str1, char * str2, uint64_t len2, char * str3, uint64_t * len3)
-    switch (queryKVSLocalServer(getpid(),group_id, secret, strlen(secret)+1, NULL,NULL)){
+    int statusQuery = queryKVSLocalServer(getpid(),group_id, secret, strlen(secret)+1, NULL,NULL);
+    // If authentication was unsuccessful shutdown call back thread
+    if (statusQuery != QUERY_OK){ 
+        callbackDisconnect();
+    }
+    switch (statusQuery){
         case QUERY_OK:
             return SUCCESS; 
         case QUERY_ERROR_DISCONNECTED_SOCK:
@@ -108,12 +172,17 @@ int delete_value(char * key){
 }
 
 int close_connection(){
+    // Check status of connection
+    if (clientSock == DISCONNECTED_SOCKET){
+        return ERROR_DISCONNECTED_SOCK;
+    }
     // Send disconnection request
     int status = queryKVSLocalServer(MSG_ID_CLOSE_CONN, NULL, NULL,0, NULL,NULL);
     // Even if communication with the server is not possible connection is closed
     // The only way an error arises is if the server is either disconnected or 
     // unable to answer the query
     clientSock = DISCONNECTED_SOCKET;
+    callbackDisconnect();
     switch(status){
         case QUERY_OK:
             return SUCCESS; 

@@ -21,4 +21,8 @@
 #define QUERY_COM_ERROR -100
 int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char ** str3, uint64_t * len3);
 
+#define RCV_CALLBACK_OK 0
+#define RCV_CALLBACK_ERROR -1
+int rcvCallback(int * cb_id, char ** value, uint64_t * valLen);
+
 #endif
