@@ -17,6 +17,7 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         return QUERY_COM_ERROR;
     }
     #ifdef DEBUG_COM
+    printf("== Begin query ==\n");
     printf("Sent msg id: %d.\n",msgId);
     #endif
     int strLen;
@@ -104,6 +105,9 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         printf("Reveived str3: %s.\n",*str3);
         #endif
     }
+    #ifdef DEBUG_COM
+    printf("== End query ==\n");
+    #endif
     if(msgId == MSG_ID_CLOSE_CONN){
         close(clientSock);
         clientSock = DISCONNECTED_SOCKET;
@@ -120,6 +124,8 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         return QUERY_GROUP_DSN_EXIST;
     case STATUS_ALLOC_ERROR:
         return QUERY_ALLOC_ERROR;
+    case STATUS_KEY_DSNT_EXIST:
+        return QUERY_KEY_DSNT_EXIST;
     default:
         return QUERY_COM_ERROR;
     }

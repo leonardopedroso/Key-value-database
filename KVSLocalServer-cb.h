@@ -15,5 +15,10 @@ typedef struct callbackStruct{
 }CALLBACK;
 
 void callbackConnect(CLIENT * client);
+int callbackRegister(CLIENT* client, char * key, char * cb_id);
+
+void callbackDeleteKey(char * key);
+void callbackDeleteClient(int cb_sock);
+void callbackFlag(char * key);
 
 #endif

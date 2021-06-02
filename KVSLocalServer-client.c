@@ -51,7 +51,10 @@ void * KVSLocalServerClientThread(void * client){
             continue;
         }
         switch(msgId){
-            case MSG_ID_PUT_VAL:
+            case MSG_ID_PUT_VAL:{
+                // Copy key to croadcast callback if out value is valid
+                char * cpkey = (char*) malloc(strlen(buffer1)+1);
+                strcpy(cpkey,buffer1);
                 // Output status to msgId just to avoid allocating another variable
                 // Cannot send group poiter as argument beacause it may loose validy 
                 // Group acess as to be check inside read lock entries
@@ -60,7 +63,13 @@ void * KVSLocalServerClientThread(void * client){
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
                 // Memory on buffer1 and buffer2 is not freed because it is used as the memory allocated for the key value pair
                 // On error buffer1 and buffer2 are freed inside groupAddEntry
+                // Callbacks is success
+                if (msgId == STATUS_OK){
+                    callbackFlag(cpkey);
+                }
+                free(cpkey);
                 break;
+            }
             case MSG_ID_GET_VAL:{
                 // Output status to msgId just to avoid allocating another variable
                 // Cannot send group poiter as argument beacause it may loose validy 
@@ -79,24 +88,42 @@ void * KVSLocalServerClientThread(void * client){
             case MSG_ID_DEL_VAL:
                 // Output status to msgId just to avoid allocating another variable
                 // Cannot send group poiter as argument beacause it may loose validy 
-                // Group acess as to be check inside read lock entries
+                // Group acess has to be check inside read lock entries
                 free(buffer2);
                 msgId = groupDeleteEntry((CLIENT *) client,buffer1);
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
+                // Callbacks 
+                if (msgId == STATUS_OK){
+                    callbackFlag(buffer1);
+                    callbackDeleteKey(buffer1);
+                }
+                // Free memory
                 free(buffer1);
                 break;
         
                 break;
             case MSG_ID_REG_CB:
-        
+                // Output status to msgId just to avoid allocating another variable
+                // Cannot send group poiter as argument beacause it may loose validy 
+                // Group acess has to be check inside read lock entries
+                msgId = callbackRegister((CLIENT*) client,buffer1,buffer2);
+                ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
+                free(buffer2);
+                // Memory on buffer1 is not freed because it is used as the memory allocated for the key value pair
+                // On error buffer1 is freed inside callback
                 break;
             // ---------- Close client connection----------
             case MSG_ID_CLOSE_CONN:
                 // Commanded disconnection
                 msgId = clientDisconnect(client);
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
-                // [CUIDADO QUANDO TIVER O CALLBACK]
-                close(((CLIENT *)client)->clientSocket);
+                close(((CLIENT *)client)->clientSocket); // Close socket
+                close(((CLIENT *)client)->cb_sock); // Close callback socket
+                // If success clear callbacks
+                if (msgId == STATUS_OK){
+                    callbackDeleteClient(((CLIENT *)client)->cb_sock);
+                }
+                ((CLIENT *)client)->cb_sock = DISCONNECTED_SOCKET;
                 // Free memory allocated in this query (note that buffer2 may be NULL)
                 // It is only guaranteed that buffer2 does not have an invalid address
                 free(buffer1);
@@ -214,6 +241,10 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
 }
 
 int clientDisconnect(CLIENT * client){
+    // Check if it is already disconnected
+    if (client->connectivityStatus == CONN_STATUS_DISCONNECTED){
+        return STATUS_ACCSS_DENIED;
+    }
     // Set connectivity status
     client->connectivityStatus = CONN_STATUS_DISCONNECTED;
     // Define disconnection time
@@ -221,6 +252,7 @@ int clientDisconnect(CLIENT * client){
         perror("Clock gettime error");
         // Time is not critical so exit is overkill
     }
+    // Here no protection to authGroup is needed because it wont be accessed anymore
     client->authGroup = NULL; // Remove access to group 
     printf("Commanded disconnection of PID: %d\n",client->PID);
     return STATUS_OK;
@@ -285,6 +317,10 @@ void closeClients(){
         searchPointerPrev = searchPointer;
         searchPointer = searchPointer->prox;
         close(searchPointerPrev->clientSocket); // Close socket 
+        if(searchPointerPrev->cb_sock != DISCONNECTED_SOCKET){
+            close(searchPointerPrev->cb_sock); // Close callback socket
+            callbackDeleteClient(searchPointerPrev->cb_sock); // Delete callbacks
+        }
         pthread_join(searchPointerPrev->clientThread, NULL); // Wait for client thread
         pthread_mutex_destroy(&searchPointerPrev->authGroup_mtx); // Destroy mutex 
         free(searchPointerPrev); // Free memory allocated for client

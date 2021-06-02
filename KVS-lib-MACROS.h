@@ -19,6 +19,7 @@
 #define STATUS_ACCSS_DENIED -1
 #define STATUS_GROUP_DSN_EXIST -2
 #define STATUS_ALLOC_ERROR -3
+#define STATUS_KEY_DSNT_EXIST -4
 
 // ---------- Connectivity ----------
 #define DISCONNECTED_SOCKET -1
