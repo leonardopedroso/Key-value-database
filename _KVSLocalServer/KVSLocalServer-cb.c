@@ -52,7 +52,6 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
     }
     pthread_mutex_unlock(&client->authGroup_mtx);
     // 2. Check if key exists
-    ENTRY * prev = NULL;
     // [WRITE LOCK ENTRIES] 
     pthread_rwlock_rdlock(&client->authGroup->entries_rwlock);
     ENTRY * searchEntry = client->authGroup->entries;
