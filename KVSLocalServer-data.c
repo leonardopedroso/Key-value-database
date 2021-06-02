@@ -1,5 +1,6 @@
+#include "KVSLocalServer-base.h"
 #include "KVSLocalServer-data.h" // Include header
-
+#include "KVSLocalServer-auth.h"
 
 // ---------- Global variables ----------
 GROUP * groups = NULL; // Pointer to the first element of the linked list of groups 

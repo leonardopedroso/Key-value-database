@@ -1,8 +1,9 @@
+#include "KVS-lib-base.h" // Include base header
 #include "KVS-lib-com.h"
 
 // ---------- Global variables ----------
 int clientSock = DISCONNECTED_SOCKET; // client socket
-struct sockaddr_un server_sock_addr; // server socket address
+int cb_sock[2]; // Socket for the callback server
 
 int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char ** str3, uint64_t * len3){
     // [IN MUTEX com region]
@@ -123,3 +124,4 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         return QUERY_COM_ERROR;
     }
 }
+

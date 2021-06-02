@@ -1,4 +1,6 @@
 #include "KVSLocalServer-client.h"
+#include "KVSLocalServer-cb.h"
+#include "KVSLocalServer-com.h" // to communicate with KVS-lib
 
 // ---------- Global variables ----------
 CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
@@ -17,7 +19,7 @@ void * KVSLocalServerClientThread(void * client){
     while(1){
         buffer1 = NULL;
         buffer2 = NULL;
-        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) == RCV_QUERY_COM_ERROR){
+        if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) != RCV_QUERY_SUCCESS){
             // [CUIDADO QUANDO TIVER O CALLBACK]
             fprintf(stderr,"Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
             ((CLIENT *)client)->connectivityStatus = CONN_STATUS_DISCONNECTED;
@@ -29,8 +31,15 @@ void * KVSLocalServerClientThread(void * client){
         if(msgId >= MSG_ID_ESTBL_CONN){ // PIDS greater than MSG_ID_ESTBL_CONN
             // Define client PID
             ((CLIENT *)client)->PID = msgId;
+            ((CLIENT *)client)->cb_sock = DISCONNECTED_SOCKET;
             // Output status to msgId just to avoid allocating another variable
             msgId = clientAuth(((CLIENT *)client), buffer1, buffer2);
+            // If authentication is successful establish connection with callback socket
+            if(msgId == STATUS_OK){
+                // If connection with callback is unsuccessful it does not report the error 
+                // Only if the user attempts to register a callback the error is reported 
+                callbackConnect((CLIENT *)client);
+            }
             // Answer query of the client
             ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
             if(msgId == STATUS_OK){

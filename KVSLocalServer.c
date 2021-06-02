@@ -1,4 +1,7 @@
 #include "KVSLocalServer.h" // Header
+#include "KVSLocalServer-data.h" // Data management functions
+#include "KVSLocalServer-client.h" // Client management functions
+#include "ui.h" // User interface
 
 // ---------- Global variables ----------
 int shutdownPipeFd;
@@ -217,9 +220,9 @@ void * KVSLocalServerShutdownThread(void * arg){
     }
     // ---------- Shutdown procedure ----------
     // - Close thread accepting connections
-    close(server_sock); // Close socket listening for connections
+    close(server_sock); // Close socket listening to connections
     remove(KVS_LOCAL_SERVER_ADDR); // Remove address
-    pthread_join(*serverThread,NULL); // Wait for server thread to quit
+   
     // - Close clients and free memory allocated to them 
     closeClients(); // Close connections to the clients, join repective threads, and free memory
     // - Clear memory of key value pairs

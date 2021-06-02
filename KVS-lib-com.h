@@ -3,16 +3,6 @@
 
 //#define DEBUG_COM
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h> // to open, close, read
-#include <sys/socket.h> // to use sockets
-#include <sys/un.h> // to use unix domain sockets
-#include <string.h> // to use strcpy
-#include <stdint.h> // to use uint16_t
-
-#include "KVS-lib-MACROS.h"
-
 #define QUERY_OK 0
 #define QUERY_ERROR_DISCONNECTED_SOCK -1
 #define QUERY_ACCSS_DENIED -2
