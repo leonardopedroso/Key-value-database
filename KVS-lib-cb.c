@@ -4,8 +4,9 @@
 // ---------- Global variables ----------
 pthread_t cbThread; // Thread for the callback
 CALLBACK * callbacks = NULL; // Pointer to list of callbacks
+static pthread_rwlock_t callbacks_rwlock = PTHREAD_MUTEX_INITIALIZER; // RW lock to protect callback list
 extern int cb_sock[2]; // callback socket
-// [STATIC RW LOCK FOR CALLBACK LIST PROTECTION]
+
 
 void * callbackServerThread(void * arg){
     // Wait for the connection of the KVS local server
@@ -67,6 +68,7 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
     // ---------- Search callback and assign cb_id ----------
     int cb_id = 0;
     // [WRITE LOCK CALLBACKS]
+    pthread_rwlock_rdlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     if(callbacks == NULL){
         callbacks = newCallback;
@@ -79,8 +81,9 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
         searchPointer->prox = newCallback;
     }
     // [UNLOCK CALLBACKS]
+    pthread_rwlock_unlock(&callbacks_rwlock);
     #ifdef DEBUG_CALLBACK
-    printf("Registered callback id: %d.",cb_id);
+    printf("Registered callback id: %d.\n",cb_id);
     #endif
     return cb_id;
 }
@@ -88,6 +91,7 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
 void * callbackWrapperThread(void * arg){
     // ---------- Search callback ----------
     // [READ LOCK CALLBACKS]
+    pthread_rwlock_rdlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     while(searchPointer != NULL){
         // Check if group already exists
@@ -97,24 +101,27 @@ void * callbackWrapperThread(void * arg){
         searchPointer = searchPointer->prox;
     }
     if (searchPointer == NULL){
+        pthread_rwlock_unlock(&callbacks_rwlock);
+        pthread_exit(NULL);
         // Loss of synch
-        // Pensar nisto
-        // [READ UNLOCK CALLBACKS]
+        // Callbacks were cleared connection was closed
     }else{
         // Run callback function
         char * cpkey = (char *) malloc(strlen(searchPointer->key)+1);
         if (cpkey == NULL){
+            pthread_rwlock_unlock(&callbacks_rwlock);
             fprintf(stderr,"Memory allocation for callback function failed.\n");
             pthread_exit(NULL);
         }
         strcpy(cpkey,searchPointer->key);
         void (*cpfunc)(char *) = searchPointer->cb_func;
+        pthread_rwlock_unlock(&callbacks_rwlock);
         // [READ UNLOCK CALLBACKS]
         // Run callback function
         // Note that this function is not dependent on memory allocated by the connection
         // Thus, the connection can be terminated, callback memory deallocated, that this functions keeps running
         #ifdef DEBUG_CALLBACK
-        printf("Running callback id: %d.",*((int *)arg));
+        printf("Running callback id: %d.\n",*((int *)arg));
         #endif
         (*cpfunc)(cpkey);
         free(cpkey);
@@ -129,6 +136,9 @@ void callbackDisconnect(){
     cb_sock[0] = -1;
     close(cb_sock[1]); // Close callback socket listening to connections
     cb_sock[1] = -1;
+    #ifdef DEBUG_CALLBACK
+    printf("Callback socket closed.\n");
+    #endif
     pthread_join(cbThread,NULL); // Wait for server thread to quit
 }
 
@@ -136,7 +146,12 @@ void callbackClear(){
     // Allocate pointer to group list
     CALLBACK * prev = NULL;
     // [WRITE LOCK CALLBACKS]
+    pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
+    // Remove access to the list 
+    callbacks = NULL;
+    pthread_rwlock_unlock(&callbacks_rwlock);
+    // [UNLOCK CALLBACKS]
     // Iterate through all groups
     while(searchPointer != NULL){
         // Check next element on the list
@@ -147,8 +162,6 @@ void callbackClear(){
         free(prev->key);
         free(prev); // delete group block
     }
-    callbacks = NULL;
-    // [UNLOCK CALLBACKS]
     #ifdef DEBUG_CALLBACK
     printf("All callbacks cleared.\n");
     #endif

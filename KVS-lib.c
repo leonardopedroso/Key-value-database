@@ -200,6 +200,8 @@ int register_callback(char * key, void (*callback_function)(char *)){
             return ERROR_ALLOC;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
+        case QUERY_KEY_DSNT_EXIST:
+            return ERROR_KEY_DSNT_EXIST;
         default:
             return ERROR_COM_SERVER;
     }

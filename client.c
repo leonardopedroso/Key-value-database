@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include "KVS-lib.h"
 
+void printChanged(char * key){
+    printf("I am a callback function to tell you that %s changed!\n",key);
+}
+
 
 int main(){
     printf("PID: %d\n",getpid());
@@ -16,10 +20,12 @@ int main(){
         exit(0);
     }
 
+
     char * out;
 
     char key1[10] = "key1";
     char val1[10] = "val1";
+
     if(put_value(key1,val1)!=0){
         printf("Put value error.\n");
         exit(0);
@@ -31,6 +37,12 @@ int main(){
     }
     printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
     free(out);
+
+    if(register_callback(key1,&printChanged)!= SUCCESS){
+        printf("Error on register callback.\n");
+        exit(0);
+    }
+    printf("Callback registed.\n");
 
     getchar();
 

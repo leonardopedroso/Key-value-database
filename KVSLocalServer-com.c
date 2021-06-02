@@ -7,7 +7,7 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
         return RCV_QUERY_COM_ERROR;
     }
     #ifdef DEBUG_COM
-    printf(" == New query received == \n");
+    printf("== New query received == \n");
     printf("Reveived msg id: %d.\n",*msgId);
     #endif
     // 2. Receive length of first argument 
@@ -75,7 +75,7 @@ int rcvQueryKVSLocalServer(int clientSock, int * msgId, char ** str1, char ** st
         #endif
     }
     #ifdef DEBUG_COM
-    printf(" == Full query received == \n");
+    printf("== Full query received == \n");
     #endif
     return RCV_QUERY_SUCCESS;
 }
@@ -85,19 +85,34 @@ int ansQueryKVSLocalServer(int clientSock, int status, char * str1, uint64_t len
     if(status == STATUS_OK && str1 != NULL){
         status = STATUS_OK_W_ARG;
     }
+    #ifdef DEBUG_COM
+    printf("== Answer query == \n");
+    #endif
     // Send status 
     if(write(clientSock,&status,sizeof(int))<= 0){
         return ANS_QUERY_COM_ERROR;
     }
+    #ifdef DEBUG_COM
+    printf("Sent status: %d.\n",status);
+    #endif
     if(status == STATUS_OK_W_ARG){
         // Send response string length
         if(write(clientSock,&len,sizeof(uint64_t))<= 0){
             return ANS_QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent len1: %llu.\n",len);
+        #endif
         // Send string response
         if(write(clientSock,str1,len)<= 0){
             return ANS_QUERY_COM_ERROR;
         }
+        #ifdef DEBUG_COM
+        printf("Sent str1: %s.\n",str1);
+        #endif
     }
+    #ifdef DEBUG_COM
+    printf("== End answer query ==\n");
+    #endif
     return ANS_QUERY_SUCCESS;
 }
