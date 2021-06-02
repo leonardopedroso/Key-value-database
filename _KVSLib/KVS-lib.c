@@ -102,6 +102,8 @@ int establish_connection (char * group_id, char * secret){
             return ERROR_ALLOC;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
+        case QUERY_AUTH_COM:
+            return ERROR_COM_AUTH_SERVER;
         default:
             return ERROR_COM_SERVER;
     }
@@ -166,6 +168,8 @@ int delete_value(char * key){
             return ERROR_ALLOC;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
+        case QUERY_AUTH_COM:
+            return ERROR_COM_AUTH_SERVER;
         default:
             return ERROR_COM_SERVER;
     }

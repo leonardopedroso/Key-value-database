@@ -21,10 +21,16 @@ void * KVSLocalServerClientThread(void * client){
         buffer1 = NULL;
         buffer2 = NULL;
         if(rcvQueryKVSLocalServer(((CLIENT *)client)->clientSocket, &msgId, &buffer1, &buffer2, &buffer2Len) != RCV_QUERY_SUCCESS){
-            // [CUIDADO QUANDO TIVER O CALLBACK]
             fprintf(stderr,"Uncommanded disconnection of PID: %d\n",((CLIENT *)client)->PID);
             ((CLIENT *)client)->connectivityStatus = CONN_STATUS_DISCONNECTED;
+            // Delete callbacks of client
+            callbackDeleteClient(((CLIENT *)client)->cb_sock);
+            // Close sockets
             close(((CLIENT *)client)->clientSocket);
+            if(((CLIENT *)client)->cb_sock != DISCONNECTED_SOCKET){
+                close(((CLIENT *)client)->cb_sock); // Close callback socket
+                callbackDeleteClient(((CLIENT *)client)->cb_sock); // Delete callbacks
+            }
             pthread_exit(NULL); // Close KVSServerThread
         }
         // ---------- Authenticate client ----------

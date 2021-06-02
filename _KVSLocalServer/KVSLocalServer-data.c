@@ -63,7 +63,7 @@ int groupAdd(char * groupId){
         return GROUP_ALLOC_ERROR;
     }
     for(int i= 0; i< DEBUG_SMALL_SECRET_LEN-1; i++){
-        *(secre +i) = (char) 33+(rand()%94); // generate numbers 
+        *(secret +i) = (char) 33+(rand()%94); // generate numbers 
     }
     *(secret+DEBUG_SMALL_SECRET_LEN-1) = '\0';
     #else
@@ -242,16 +242,20 @@ int groupShow(char * groupId){
         return GROUP_ALLOC_ERROR;
     }
     // Catch errors on secret query to auth server
-    switch(authGetSecret(groupId,secret)){
+    int status = authGetSecret(groupId,secret);
+    // Communication error with auth server (secret has already been freed)
+    if (status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+        free(secret);
+        return GROUP_AUTH_COM_ERROR;
+    }
+    switch(status){
         case AUTH_OK: // Success
             break;
-        // Communication error with auth server (secret has already been freed)
-        case AUTH_COM_ERROR:
-            return GROUP_AUTH_COM_ERROR;
         // Group already exists in server
         // Occurs if group is created, KVS auth server shuts down in an uncontrolled manner, 
         // KVS auth server reboots and lost group information
         case AUTH_GROUP_DSN_EXIST:
+            free(secret);
             return GROUP_LOSS_SYNCH;
     }
     // Print group info
@@ -418,7 +422,6 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
     free(searchEntry->key);
     free(searchEntry->value);
     free(searchEntry);
-
     return STATUS_OK;
 }
 
@@ -437,6 +440,7 @@ void groupClear(){
         // already been joined when this function runs
         entriesDelete(prev); // delete entries of group
         pthread_rwlock_destroy(&prev->entries_rwlock);
+        authDeleteGroup(prev->id); // delete group on authentication server
         free(prev->id); // delete group id of group
         free(prev); // delete group block
     }

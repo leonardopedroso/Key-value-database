@@ -109,7 +109,7 @@ int main(){
                         fprintf(stderr,"Unable to create group: Communication with authentication server failed.\n");
                         break;
                     case GROUP_LOSS_SYNCH:
-                        fprintf(stderr,"Unable to create group: Lost synchronization with authentication server.\n");
+                        fprintf(stderr,"Unable to create group: Other KVS Local Server has a group with the same id.\n");
                     default:
                         fprintf(stderr,"Unable to create group: Unknown exception.\n");
                         break;
@@ -122,6 +122,9 @@ int main(){
                         break;
                     case GROUP_DSNT_EXIST:
                         fprintf(stderr,"Unable to delete group: Group does not exist.\n");
+                        break;
+                    case GROUP_AUTH_COM_ERROR:
+                        fprintf(stderr,"Unable to delete group: Communication with authentication server failed.\n");
                         break;
                     default:
                         fprintf(stderr,"Unable to delete group: Unknown exception.\n");
@@ -156,7 +159,7 @@ int main(){
                 // Flag shutdown pipe
                 int flag = SD_CONTROLLED;
                 if(write(shutdownPipeFd,&flag,sizeof(int))<= 0){
-                    printf("KVS local server was signaled to shutdown.\n");
+                    printf("KVS Local Server was signaled to shutdown.\n");
                     fprintf(stderr,"Shutdown pipe error: Unable to flag shutdown.\n");
                     fprintf(stderr,"Uncontrolled shutdown.\n");
                     exit(-1);
@@ -241,6 +244,7 @@ void * KVSLocalServerShutdownThread(void * arg){
     closeClients(); // Close connections to the clients, join repective threads, and free memory
     // - Clear memory of key value pairs
     groupClear(); // Clear memory of all groups 
+    endCom(); // Close auth server 
     // - Close shutdown pipe
     close(shutdownPipeFd); // Close wiriting to shutdoen pipe
     close(*((int *)arg)); // Reading from shutdown pipe
