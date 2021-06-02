@@ -1,4 +1,5 @@
 message from local to auth lost - put random variable on sendto of the local
 duplication of messages from auth to local - duplicate sendto in auth
 message from auth to local lost - put random variable on sendto of the server
-valgrind --leak-check=full -v ./char-conv-prob
+
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./KVSLocalServer

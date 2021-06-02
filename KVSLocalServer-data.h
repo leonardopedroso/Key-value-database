@@ -3,6 +3,8 @@
 
 #include "KVSLocalServer-base.h"
 
+#define DEBUG_SMALL_SECRET_LEN 5
+
 // Struct to hold key-value pairs
 typedef struct entryStruct{
     char * key; //with malloc instead of char key[MAX_STR_LENGTH];

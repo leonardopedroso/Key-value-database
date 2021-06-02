@@ -51,10 +51,6 @@ int main(void){
         // if an error happens while receiving we shutdown the server
         if(aux == -1){
             fprintf(stderr,"\nShutting down\n");
-            // even if the error was due to the socket being closed, this will
-            // not result in a problem, it will just return an error
-            close(sfd);
-            deleteAllPairs(&head);
             break;
         }
         if(aux != sizeof(REQUEST)){
@@ -124,17 +120,21 @@ int main(void){
                 sizeof(struct sockaddr_in));
             if(aux == -1){
                 fprintf(stderr,"\nShutting down\n");
-                // even if the error was due to the socket being closed, this
-                // will not result in a problem, it will just return an error
-                close(sfd);
-                deleteAllPairs(&head);
                 break;
             } else if(aux != sizeof(ANSWER)){
                 fprintf(stderr,"Could not send the complete datagram\n");
+                break;
             }
         }
 
         // to divide the log of each request
         printf("\n");
     }
+
+    // even if the error was due to the socket being closed, this will
+    // not result in a problem, it will just return an error
+    close(sfd);
+    deleteAllPairs(&head);
+
+    return 0;
 }

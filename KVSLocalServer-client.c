@@ -1,6 +1,7 @@
 #include "KVSLocalServer-client.h"
 #include "KVSLocalServer-cb.h"
 #include "KVSLocalServer-com.h" // to communicate with KVS-lib
+#include "KVSLocalServer-auth.h"
 
 // ---------- Global variables ----------
 CLIENT * clients = NULL; // Pointer to the first element of the linked list of clients 
@@ -33,7 +34,24 @@ void * KVSLocalServerClientThread(void * client){
             ((CLIENT *)client)->PID = msgId;
             ((CLIENT *)client)->cb_sock = DISCONNECTED_SOCKET;
             // Output status to msgId just to avoid allocating another variable
-            msgId = clientAuth(((CLIENT *)client), buffer1, buffer2);
+            char * secret = (char *) malloc(MAX_SECRET_LEN);
+            if(secret == NULL){
+                msgId = STATUS_ALLOC_ERROR;
+            }else{
+                msgId = authGetSecret(buffer1,secret);
+                if(msgId == AUTH_GROUP_DSN_EXIST){
+                    msgId = STATUS_GROUP_DSN_EXIST;
+                }else if(msgId == AUTH_IMPOSSIBLE_SERVER || msgId == AUTH_SENDING || msgId == AUTH_RECEIVING || msgId == AUTH_INVALID){
+                    msgId = STATUS_AUTH_COM;
+                }else if(msgId == AUTH_OK ){
+                    // Compare secret
+                    if (strcmp(secret,buffer2)== 0){
+                        msgId = STATUS_OK;
+                    }else{
+                        msgId = STATUS_ACCSS_DENIED;
+                    }
+                }
+            }
             // If authentication is successful establish connection with callback socket
             if(msgId == STATUS_OK){
                 // If connection with callback is unsuccessful it does not report the error 

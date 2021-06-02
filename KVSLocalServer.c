@@ -1,4 +1,5 @@
 #include "KVSLocalServer.h" // Header
+#include "KVSLocalServer-auth.h" // Auth server
 #include "KVSLocalServer-data.h" // Data management functions
 #include "KVSLocalServer-client.h" // Client management functions
 #include "ui.h" // User interface
@@ -7,6 +8,19 @@
 int shutdownPipeFd;
  
 int main(){
+    // ---------- Setup authentication server ----------
+    switch(initCom()){
+        case SUCCESS_SOCK:
+            fprintf(stderr,"Connection with authentication established.\n");
+            break;
+        case ERR_CREATING_SOCK:
+            fprintf(stderr,"Error crreating socket for authentication.\n");
+            exit(-1);
+        case ERR_CONVERTING_IP:
+            fprintf(stderr,"Error converting IP for authentication.\n");
+            exit(-1);
+    }
+
     // ---------- Setup server variables ----------
     int server_sock; // fd of rcv socket
     struct sockaddr_un server_sock_addr; // struct addr of sever socket
