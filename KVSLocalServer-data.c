@@ -52,30 +52,65 @@ int groupAdd(char * groupId){
     pthread_rwlock_unlock(&groups_rwlock);
     // [READ UNLOCK groups]
     // 3. Get group secret and communicate with auth server
-    char * secret; // Define access pointer to generated secret
+    // Define access pointer to generated secret
+    #ifdef DEBUG_SMALL_SECRET_LEN
+    // Allicate memory for secrete 
+    char * secret = (char *) malloc(DEBUG_SMALL_SECRET_LEN); 
+    if(secret == NULL){ // Cacth allocation error
+        pthread_rwlock_destroy(&newGroup->entries_rwlock);
+        free(newGroup->id);
+        free(newGroup);
+        return GROUP_ALLOC_ERROR;
+    }
+    for(int i= 0; i< DEBUG_SMALL_SECRET_LEN-1; i++){
+        *(secre +i) = (char) 33+(rand()%94); // generate numbers 
+    }
+    *(secret+DEBUG_SMALL_SECRET_LEN-1) = '\0';
+    #else
+    // Allicate memory for secrete 
+    char * secret = (char *) malloc(MAX_SECRET_LEN); 
+    if(secret == NULL){ // Cacth allocation error 
+        pthread_rwlock_destroy(&newGroup->entries_rwlock);
+        free(newGroup->id);
+        free(newGroup);
+        return GROUP_ALLOC_ERROR;
+    }
+    for(int i= 0; i< MAX_SECRET_LEN-1; i++){
+        *(secret +i) = (char) 33+(rand()%94); // generate numbers 
+    }
+    *(secrete+MAX_SECRET_LEN-1) = '\0';
+    #endif 
     
+    // Create group on authentication server 
+    int status = authCreateGroup(groupId,secret);
     // Catch errors on secret generation and broadcast to KVS server
-    switch(authCreateGroup(groupId,&secret)){ 
+    // Communication error with auth server
+    if (status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+        pthread_rwlock_destroy(&newGroup->entries_rwlock);
+        free(newGroup->id);
+        free(newGroup);
+        free(secret);
+        return GROUP_AUTH_COM_ERROR;
+    }
+    switch(status){ 
         case AUTH_OK: // Successfull 
             break;
         case AUTH_ALLOC_ERROR: // Alocation error
             pthread_rwlock_destroy(&newGroup->entries_rwlock);
             free(newGroup->id);
             free(newGroup);
+            free(secret);
             return GROUP_ALLOC_ERROR;
-        // Communication error with auth server (secret has already been freed)
-        case AUTH_COM_ERROR:
-            pthread_rwlock_destroy(&newGroup->entries_rwlock);
-            free(newGroup->id);
-            free(newGroup);
-            return GROUP_AUTH_COM_ERROR;
         // Group already exists in server
         // Occurs if group is created, KVS server shuts down in an uncontrolled manner, 
         // KVSserver reboots, and then attempts to create a group with the same name
+        // OR
+        // It is a group of other KVS Local Server
         case AUTH_GROUP_ALREADY_EXISTS: 
             pthread_rwlock_destroy(&newGroup->entries_rwlock);
             free(newGroup->id);
             free(newGroup);
+            free(secret);
             return GROUP_LOSS_SYNCH;
     }
     printf("Created group -> Group id: %s | Secret: %s \n",groupId, secret);
@@ -102,6 +137,17 @@ int groupAdd(char * groupId){
 }
 
 int groupDelete(char * groupId){
+    // Delete group from authentication server 
+    int status = authDeleteGroup(groupId);
+    // Catch errors on secret generation and broadcast to KVS server
+    // Communication error with auth server
+    if (status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+        return GROUP_AUTH_COM_ERROR;
+    }
+    if(status == GROUP_DSNT_EXIST){
+        return GROUP_DSNT_EXIST;
+    }
+
     // ---------- Rearrange list ----------
     // Allocate pointer to group list
     GROUP * prev = NULL;
@@ -190,9 +236,13 @@ int groupShow(char * groupId){
     }
     pthread_rwlock_unlock(&groups_rwlock);
     // [READ UNLOCK groups]
-    char * secret; // Allocate pointer to secret
+    char * secret = (char *) malloc(MAX_SECRET_LEN); // Allocate pointer to secret
+    if (secret == NULL){
+        fprintf(stderr,"Error allocating memory to shown group.\n");
+        return GROUP_ALLOC_ERROR;
+    }
     // Catch errors on secret query to auth server
-    switch(authGetSecret(groupId,&secret)){
+    switch(authGetSecret(groupId,secret)){
         case AUTH_OK: // Success
             break;
         // Communication error with auth server (secret has already been freed)
