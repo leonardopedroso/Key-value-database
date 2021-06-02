@@ -6,8 +6,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "KVS_local-auth_com.h"
-
 // Success
 #define SUCCESS 0
 // Could not create socket

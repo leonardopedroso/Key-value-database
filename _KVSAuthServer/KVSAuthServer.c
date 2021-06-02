@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "KVS_local-auth_com.h"
 #include "KVSAuthServer-com.h"
 #include "KVSAuthServer-data.h"
 

@@ -1,6 +1,5 @@
+#include "KVS_local-auth_com.h"
 #include "KVSAuthServer-com.h"
-
-#include <stdio.h>
 
 int createServerSocket(int *sfd,struct sockaddr_in *svaddr){
     *sfd = socket(AF_INET, SOCK_DGRAM, 0); // create server socket
