@@ -20,9 +20,7 @@ int main(){
         exit(0);
     }
 
-
     char * out;
-
     char key1[10] = "key1";
     char val1[10] = "val1";
 
