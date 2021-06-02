@@ -15,7 +15,7 @@
 #define ERROR_CALLBACK_SOCK -105
 #define ERROR_CALLBACK_COM_ERROR -106
 
-#define ERROR_AUTH_COM -200
+#define ERROR_COM_AUTH_SERVER -200
 
 int establish_connection (char * group_id, char * secret);
 int put_value(char * key, char * value);

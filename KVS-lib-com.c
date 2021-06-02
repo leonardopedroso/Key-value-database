@@ -126,6 +126,8 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         return QUERY_ALLOC_ERROR;
     case STATUS_KEY_DSNT_EXIST:
         return QUERY_KEY_DSNT_EXIST;
+    case STATUS_AUTH_COM:
+        return QUERY_AUTH_COM;
     default:
         return QUERY_COM_ERROR;
     }
