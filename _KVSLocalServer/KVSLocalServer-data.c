@@ -276,6 +276,31 @@ int groupShow(char * groupId){
     return GROUP_OK;
 }
 
+
+int groupCheckExistence(char * group){
+    // [READ LOCK groups]
+    pthread_rwlock_rdlock(&groups_rwlock);
+    // Allocate pinter to group list
+    GROUP * searchPointer = groups;
+    // Iterate until the desired group is found
+    while(1){
+        // If end of the list has been reached
+        if(searchPointer == NULL){
+            pthread_rwlock_unlock(&groups_rwlock);
+            // [READ UNLOCK groups]
+            return STATUS_GROUP_DSN_EXIST;
+        }
+        // If groupId is found
+        if(strcmp(searchPointer->id,group)==0){
+            break;
+        }
+        searchPointer = searchPointer->prox;
+    }
+    pthread_rwlock_unlock(&groups_rwlock);
+    // [READ UNLOCK groups]
+    return GROUP_OK;
+}
+
 int groupAddEntry(CLIENT * client, char * key, char * value){
     //0. Allocate Entry block just in case  (to avoid doing it in the write lock)
     ENTRY * newEntry = (ENTRY * ) malloc(sizeof(ENTRY));

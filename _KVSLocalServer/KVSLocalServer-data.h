@@ -62,6 +62,7 @@ typedef struct clientStruct{
 int groupAdd(char * group);
 int groupDelete(char * group);
 int groupShow(char * group);
+int groupCheckExistence(char * group);
 void groupClear();
 
 int groupAddEntry(CLIENT * client, char * key, char * value);
