@@ -86,7 +86,7 @@ int main(){
     // Maximum size is used just here, so that it not necessary to do mallocs inside ui files
     // The corresponding frees would have to be done outside the allocating files 
     // So we chose clear code over messy code with slightly less memory needs
-    char group[MAX_STR_LENGTH];
+    char group[MAX_GROUP_LEN];
     printf("Welcome to KVS Local Server console.\n");
     // Print menu once
     printMenu();
