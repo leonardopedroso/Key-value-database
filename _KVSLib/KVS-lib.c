@@ -12,6 +12,10 @@ extern pthread_t cbThread; // callback thread
 extern CALLBACK * callbacks;
 
 int establish_connection (char * group_id, char * secret){
+    // Check argument validity 
+    if(strlen(group_id)+1 > MAX_GROUP_LEN || strlen(secret)+1 > MAX_GROUP_LEN){
+        return ERROR_INVALID_ARG_LEN;
+    }
     // Check socket status
     if (clientSock != DISCONNECTED_SOCKET){
         return ERROR_ALRDY_CONNECTED_SOCK;
