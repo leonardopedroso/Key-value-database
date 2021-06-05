@@ -3,7 +3,7 @@
 
 #include "KVSLocalServer-base.h"
 
-#define DEBUG_COM
+//#define DEBUG_COM
 
 #define RCV_QUERY_SUCCESS 0
 #define RCV_QUERY_ALLOC_ERROR -1
