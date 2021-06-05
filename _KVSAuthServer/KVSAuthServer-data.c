@@ -1,8 +1,5 @@
+#include "KVS-lib-MACROS.h"
 #include "KVSAuthServer-data.h"
-
-// when performing the shutting down because of the Ctrl+C it should not be
-// possible for different functions to change the list at the same time
-pthread_mutex_t pairsListMutex;
 
 int checkPairElem(char *pairElem){
     char *ptr = NULL;

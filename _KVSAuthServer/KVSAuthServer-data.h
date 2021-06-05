@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
-#include "KVS-lib-MACROS.h"
 
 typedef struct pairStruct{
     char *group;
