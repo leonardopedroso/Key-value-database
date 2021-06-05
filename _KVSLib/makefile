@@ -10,3 +10,6 @@ KVS-lib.o: KVS-lib.c KVS-lib.h KVS-lib-com.c KVS-lib-cb.h KVS-lib-base.h KVS-lib
 	gcc -c  $(CFLAGS) KVS-lib.c
 KVS-lib.a: KVS-lib-com.o KVS-lib-cb.o KVS-lib.o
 	ar r KVS-lib.a KVS-lib-com.o KVS-lib-cb.o KVS-lib.o
+
+clean:
+	rm *.o KVS-lib.a
