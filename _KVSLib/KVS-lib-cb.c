@@ -132,6 +132,7 @@ void * callbackWrapperThread(void * arg){
 }
 
 void callbackDisconnect(){
+    shutdown(cb_sock[0],2);
     close(cb_sock[0]); // Close callback socket listening to connections
     close(cb_sock[1]); // Close callback socket listening to connections
     #ifdef DEBUG_CALLBACK
