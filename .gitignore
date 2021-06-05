@@ -2,13 +2,13 @@
 *.[oa]
 *.vscode
 
-./_KVSLocalServer/KVSLocalServer
+_KVSLocalServer/KVSLocalServer
 ./_KVSLocalServer/*.a
 ./_KVSLocalServer/*.o
 ./_KVSLocalServer/*.vscode
 ./_KVSLocalServer/*.DS_Store
 
-./_KVSAuthServer/KVSAuthServer
+_KVSAuthServer/KVSAuthServer
 ./_KVSAuthServer/*.a
 ./_KVSAuthServer/*.o
 ./_KVSAuthServer/*.vscode
@@ -19,13 +19,13 @@
 ./_KVSLib/*.vscode
 ./_KVSLib/*.DS_Store
 
-./examples/simpleClient/client
+examples/simpleClient/client
 ./examples/simpleClient/*.a
 ./examples/simpleClient/*.o
 ./examples/simpleClient/*.vscode
 ./examples/simpleClient/*.DS_Store
 
-./examples/threadClient/client
+examples/threadClient/client
 ./examples/threadClient/*.a
 ./examples/threadClient/*.o
 ./examples/threadClient/*.vscode
