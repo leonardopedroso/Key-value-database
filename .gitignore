@@ -3,3 +3,6 @@
 ./_KVSLib/*.o
 ./_KVSLocalServer/*.o
 ./_KVSAuthServer/*.o
+./_KVSLib/KVSLib.a
+./_KVSLocalServer/KVSLocalServer
+./_KVSAuthServer/KVSAuthServer
