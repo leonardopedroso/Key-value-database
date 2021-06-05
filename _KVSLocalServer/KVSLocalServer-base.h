@@ -13,5 +13,6 @@
 #include <unistd.h> // to open, close, read
 
 #include "KVS-lib-MACROS.h" // Shared MACROS
+#include "KVS_local-lib_com.h"
 
 #endif
