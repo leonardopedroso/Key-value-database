@@ -1,6 +1,6 @@
 *.[DS_Store]
 *.[oa]
-*.[vscode]
+*.vscode
 
 _KVSLocalServer/KVSLocalServer
 _KVSAuthServer/KVSAuthServer
