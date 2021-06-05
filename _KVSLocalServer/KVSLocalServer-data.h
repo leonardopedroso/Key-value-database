@@ -3,6 +3,7 @@
 
 #include "KVSLocalServer-base.h"
 
+#define DEBUG_FIXED_SECRET "zeleo"
 #define DEBUG_SMALL_SECRET_LEN 5
 
 // Struct to hold key-value pairs

@@ -53,6 +53,17 @@ int groupAdd(char * groupId){
     // [READ UNLOCK groups]
     // 3. Get group secret and communicate with auth server
     // Define access pointer to generated secret
+    #ifdef DEBUG_FIXED_SECRET
+    // Allicate memory for secrete 
+    char * secret = (char *) malloc(DEBUG_SMALL_SECRET_LEN); 
+    if(secret == NULL){ // Cacth allocation error
+        pthread_rwlock_destroy(&newGroup->entries_rwlock);
+        free(newGroup->id);
+        free(newGroup);
+        return GROUP_ALLOC_ERROR;
+    }
+    strcpy(secret,DEBUG_FIXED_SECRET);
+    #else
     #ifdef DEBUG_SMALL_SECRET_LEN
     // Allicate memory for secrete 
     char * secret = (char *) malloc(DEBUG_SMALL_SECRET_LEN); 
@@ -80,6 +91,7 @@ int groupAdd(char * groupId){
     }
     *(secrete+MAX_SECRET_LEN-1) = '\0';
     #endif 
+    #endif
     
     // Create group on authentication server 
     int status = authCreateGroup(groupId,secret);
