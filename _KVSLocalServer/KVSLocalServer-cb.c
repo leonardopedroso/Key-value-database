@@ -2,7 +2,7 @@
 
 // ---------- Global variables ----------
 CALLBACK * callbacks = NULL;
-// Static rw lock
+pthread_rwlock_t callbacks_rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
 void callbackConnect(CLIENT * client){
     // ---------- Setup server connection ----------
@@ -83,6 +83,7 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
     newCallback->key = key;
     newCallback->cb_id = *((int *) cb_id);
     // [WRITE LOCK CALLBACKS]
+    pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     if(callbacks == NULL){
         callbacks = newCallback;
@@ -92,6 +93,7 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
         }
         searchPointer->prox = newCallback;
     }
+    pthread_rwlock_unlock(&callbacks_rwlock);
     // [UNLOCK CALLBACKS]
     #ifdef DEBUG_CALLBACK
     printf("Registered callback id: %d of client PID: %d.\n",newCallback->cb_id, client->PID);
@@ -102,6 +104,7 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
 void callbackDeleteKey(char * key){
     CALLBACK * prev = NULL;
     // [WRITE LOCK CALLBACKS]
+    pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     while(searchPointer != NULL){
         // Find callbacks with key
@@ -118,6 +121,7 @@ void callbackDeleteKey(char * key){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
+    pthread_rwlock_unlock(&callbacks_rwlock);
     // [UNLOCK CALLBACKS]
     #ifdef DEBUG_CALLBACK
     printf("Cleared callbacks with key: %s.\n",key);
@@ -127,6 +131,7 @@ void callbackDeleteKey(char * key){
 void callbackDeleteClient(int cb_sock){
     CALLBACK * prev = NULL;
     // [WRITE LOCK CALLBACKS]
+    pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     while(searchPointer != NULL){
         // Find callbacks with key
@@ -146,6 +151,7 @@ void callbackDeleteClient(int cb_sock){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
+    pthread_rwlock_unlock(&callbacks_rwlock);
     // [UNLOCK CALLBACKS]
     #ifdef DEBUG_CALLBACK
     printf("Cleared callbacks with callback socket: %d.\n",cb_sock);
@@ -155,6 +161,7 @@ void callbackDeleteClient(int cb_sock){
 void callbackFlag(char * key){
     CALLBACK * prev = NULL;
     // [READ LOCK CALLBACKS]
+    pthread_rwlock_rdlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     while(searchPointer != NULL){
         // Find callbacks with key
@@ -168,6 +175,7 @@ void callbackFlag(char * key){
         prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
+    pthread_rwlock_unlock(&callbacks_rwlock);
     // [UNLOCK CALLBACKS]
     #ifdef DEBUG_CALLBACK
     printf("Flagged callbacks with key: %s.\n",key);
