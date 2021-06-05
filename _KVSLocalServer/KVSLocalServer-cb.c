@@ -171,7 +171,6 @@ void callbackFlag(char * key){
                 close(searchPointer->cb_sock);
             }
         }
-        prev = searchPointer;
         searchPointer = searchPointer->prox;
     }
     pthread_rwlock_unlock(&callbacks_rwlock);

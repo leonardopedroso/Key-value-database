@@ -371,7 +371,6 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
             // [READ UNLOCK AuthClient]
             break;
         }
-        prev = searchEntry;
         searchEntry = searchEntry->prox;
     }
     return STATUS_OK;
