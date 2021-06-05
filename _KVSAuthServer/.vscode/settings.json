@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "kvsauthserver-com.h": "c",
-        "kvs_local-auth_com.h": "c",
-        "kvsauthserver-data.h": "c",
-        "kvs-lib-macros.h": "c"
-    }
-}
