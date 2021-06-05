@@ -110,6 +110,7 @@ int main(){
                         break;
                     case GROUP_LOSS_SYNCH:
                         fprintf(stderr,"Unable to create group: Other KVS Local Server has a group with the same id.\n");
+                        break;
                     default:
                         fprintf(stderr,"Unable to create group: Unknown exception.\n");
                         break;

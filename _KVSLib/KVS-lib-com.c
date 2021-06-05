@@ -4,13 +4,15 @@
 // ---------- Global variables ----------
 int clientSock = DISCONNECTED_SOCKET; // client socket
 int cb_sock[2]; // Socket for the callback server
+pthread_mutex_t com_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char ** str3, uint64_t * len3){
-    // [IN MUTEX com region]
     // Check if socket has been connected
     if(clientSock == DISCONNECTED_SOCKET){
         return QUERY_ERROR_DISCONNECTED_SOCK;
-    }
+    }    
+    // [IN MUTEX com region]
+    pthread_mutex_lock(&com_mtx);
     // Protocol for communication with server:
     // 1. Write message identification
     if(write(clientSock,&msgId,sizeof(int))<=0){
@@ -105,6 +107,9 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         printf("Reveived str3: %s.\n",*str3);
         #endif
     }
+    pthread_mutex_unlock(&com_mtx);
+    // [OUT MUTEX com region]
+
     #ifdef DEBUG_COM
     printf("== End query ==\n");
     #endif
@@ -112,7 +117,6 @@ int queryKVSLocalServer(int msgId, char * str1, char * str2, uint64_t len2, char
         close(clientSock);
         clientSock = DISCONNECTED_SOCKET;
     }
-    // [OUT MUTEX com region]
     switch(status){
     case STATUS_OK:
         return QUERY_OK;

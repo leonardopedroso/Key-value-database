@@ -25,7 +25,6 @@
 #define DISCONNECTED_SOCKET -1
 
 // ---------- Data management ----------
-#define MAX_STR_LENGTH 20
 #define MAX_GROUP_LEN 256   // so that one avoids IP fragmentation when 
                             // transmitting group and secret
                             // This includes the terminator character
