@@ -1,7 +1,7 @@
 #include "KVS-lib.h" // include header
 #include "KVS-lib-base.h" // Include base header
-#include "KVS-lib-com.h"
-#include "KVS-lib-cb.h"
+#include "KVS-lib-com.h" // Include communication functions
+#include "KVS-lib-cb.h" // Include callback functions
 
 // ---------- Global variables ----------
 // Communication with KVS Local Server
@@ -89,6 +89,7 @@ int establish_connection (char * group_id, char * secret){
     if (statusQuery != QUERY_OK){ 
         callbackDisconnect();
     }
+    // Output corresponding error message
     switch (statusQuery){
         case QUERY_OK:
             return SUCCESS; 
@@ -112,6 +113,7 @@ int establish_connection (char * group_id, char * secret){
 int put_value(char * key, char * value){
     // Send put value request
     int status = queryKVSLocalServer(MSG_ID_PUT_VAL,key,value,strlen(value)+1,NULL,NULL);
+    // Output corresponding error message
     switch(status){
         case QUERY_OK:
             return SUCCESS; 
@@ -134,6 +136,7 @@ int get_value(char * key, char ** value){
     // Send put value request
     uint64_t len; // unused (we believe it may be useful to output th enumber of bytes read)
     int status = queryKVSLocalServer(MSG_ID_GET_VAL,key,NULL,0,value,&len);
+    // Output corresponding error message
     switch(status){
         case QUERY_OK:
             return SUCCESS; 
@@ -155,6 +158,7 @@ int get_value(char * key, char ** value){
 int delete_value(char * key){
     // Send put value request
     int status = queryKVSLocalServer(MSG_ID_DEL_VAL,key,NULL,0,NULL,NULL);
+    // Output corresponding error message
     switch(status){
         case QUERY_OK:
             return SUCCESS; 
@@ -177,7 +181,7 @@ int delete_value(char * key){
 
 int register_callback(char * key, void (*callback_function)(char *)){
     // Check if callback server is up and running
-    if(cb_sock[1]==DISCONNECTED_SOCKET){
+    if(cb_sock[1] == DISCONNECTED_SOCKET){
         return ERROR_CALLBACK_COM_ERROR;
     }
     // Add to callback list and find callback id in the aplication
@@ -190,9 +194,10 @@ int register_callback(char * key, void (*callback_function)(char *)){
             return ERROR_CALLBACK_COM_ERROR;
         }
     }
-    // Send regiter callback request
+    // Send register callback request
     // Callback id is sent as a byte stream
     int status = queryKVSLocalServer(MSG_ID_REG_CB,key,(char*)&cb_id,sizeof(int),NULL,NULL);
+    // Output corresponding error message
     switch(status){
         case QUERY_OK:
             return SUCCESS; 
@@ -222,7 +227,8 @@ int close_connection(){
     // The only way an error arises is if the server is either disconnected or 
     // unable to answer the query
     clientSock = DISCONNECTED_SOCKET;
-    callbackDisconnect();
+    callbackDisconnect(); // Disconnect callback socket
+    // Output corresponding error message
     switch(status){
         case QUERY_OK:
             return SUCCESS; 
