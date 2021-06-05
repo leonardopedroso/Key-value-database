@@ -1,2 +1,5 @@
 .DS_Store
 *.o
+./_KVSLib/*.o
+./_KVSLocalServer/*.o
+./_KVSAuthServer/*.o
