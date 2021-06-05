@@ -12,5 +12,6 @@
 #include <signal.h> // to manage signals for client disconnection
 
 #include "KVS-lib-MACROS.h"
+#include "KVS_local-lib_com.h"
 
 #endif

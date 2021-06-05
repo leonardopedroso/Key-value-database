@@ -9,7 +9,7 @@ KVSLocalServer-data.o: KVSLocalServer-data.c KVSLocalServer-data.h KVSLocalServe
 KVSLocalServer-client.o: KVSLocalServer-client.c KVSLocalServer-client.h KVSLocalServer-data.h KVSLocalServer-com.h KVSLocalServer-cb.h KVSLocalServer-base.h KVS-lib-MACROS.h
 	gcc -c $(CFLAGS) KVSLocalServer-client.c
 
-KVSLocalServer-com.o: KVSLocalServer-com.c KVSLocalServer-com.h KVSLocalServer-base.h KVS-lib-MACROS.h
+KVSLocalServer-com.o: KVSLocalServer-com.c KVSLocalServer-com.h KVSLocalServer-base.h KVS-lib-MACROS.h KVS_local-lib_com.h
 	gcc -c $(CFLAGS) KVSLocalServer-com.c
 
 KVSLocalServer-auth.o: KVSLocalServer-auth.c KVSLocalServer-auth.h KVSLocalServer-base.h KVS-lib-MACROS.h

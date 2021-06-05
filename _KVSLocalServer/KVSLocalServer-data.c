@@ -53,6 +53,17 @@ int groupAdd(char * groupId){
     // [READ UNLOCK groups]
     // 3. Get group secret and communicate with auth server
     // Define access pointer to generated secret
+    #ifdef DEBUG_FIXED_SECRET
+    // Allicate memory for secrete 
+    char * secret = (char *) malloc(DEBUG_SMALL_SECRET_LEN); 
+    if(secret == NULL){ // Cacth allocation error
+        pthread_rwlock_destroy(&newGroup->entries_rwlock);
+        free(newGroup->id);
+        free(newGroup);
+        return GROUP_ALLOC_ERROR;
+    }
+    strcpy(secret,DEBUG_FIXED_SECRET);
+    #else
     #ifdef DEBUG_SMALL_SECRET_LEN
     // Allicate memory for secrete 
     char * secret = (char *) malloc(DEBUG_SMALL_SECRET_LEN); 
@@ -80,6 +91,7 @@ int groupAdd(char * groupId){
     }
     *(secrete+MAX_SECRET_LEN-1) = '\0';
     #endif 
+    #endif
     
     // Create group on authentication server 
     int status = authCreateGroup(groupId,secret);
@@ -261,6 +273,31 @@ int groupShow(char * groupId){
     // Print group info
     printf("Group id: %s | Secret: %s | Number of key-value pairs: %d\n",groupId,secret,numberOfEntries);
     free(secret); // Free allocated memory
+    return GROUP_OK;
+}
+
+
+int groupCheckExistence(char * group){
+    // [READ LOCK groups]
+    pthread_rwlock_rdlock(&groups_rwlock);
+    // Allocate pinter to group list
+    GROUP * searchPointer = groups;
+    // Iterate until the desired group is found
+    while(1){
+        // If end of the list has been reached
+        if(searchPointer == NULL){
+            pthread_rwlock_unlock(&groups_rwlock);
+            // [READ UNLOCK groups]
+            return STATUS_GROUP_DSN_EXIST;
+        }
+        // If groupId is found
+        if(strcmp(searchPointer->id,group)==0){
+            break;
+        }
+        searchPointer = searchPointer->prox;
+    }
+    pthread_rwlock_unlock(&groups_rwlock);
+    // [READ UNLOCK groups]
     return GROUP_OK;
 }
 

@@ -3,6 +3,7 @@
 
 #include "KVSLocalServer-base.h"
 
+#define DEBUG_FIXED_SECRET "zeleo"
 #define DEBUG_SMALL_SECRET_LEN 5
 
 // Struct to hold key-value pairs
@@ -61,6 +62,7 @@ typedef struct clientStruct{
 int groupAdd(char * group);
 int groupDelete(char * group);
 int groupShow(char * group);
+int groupCheckExistence(char * group);
 void groupClear();
 
 int groupAddEntry(CLIENT * client, char * key, char * value);

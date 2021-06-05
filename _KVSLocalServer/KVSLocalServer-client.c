@@ -40,24 +40,29 @@ void * KVSLocalServerClientThread(void * client){
             ((CLIENT *)client)->PID = msgId;
             ((CLIENT *)client)->cb_sock = DISCONNECTED_SOCKET;
             // Output status to msgId just to avoid allocating another variable
-            char * secret = (char *) malloc(MAX_SECRET_LEN);
-            if(secret == NULL){
-                msgId = STATUS_ALLOC_ERROR;
-            }else{
-                msgId = authGetSecret(buffer1,secret);
-                if(msgId == AUTH_GROUP_DSN_EXIST){
-                    msgId = STATUS_GROUP_DSN_EXIST;
-                }else if(msgId == AUTH_IMPOSSIBLE_SERVER || msgId == AUTH_SENDING || msgId == AUTH_RECEIVING || msgId == AUTH_INVALID){
-                    msgId = STATUS_AUTH_COM;
-                }else if(msgId == AUTH_OK ){
-                    // Compare secret
-                    if (strcmp(secret,buffer2)== 0){
-                        msgId = STATUS_OK;
-                    }else{
-                        msgId = STATUS_ACCSS_DENIED;
+            // Check if group exist on this KVS Local server
+            msgId = groupCheckExistence(buffer1);
+            if(msgId == STATUS_OK){
+                // If group exists check if secret matches
+                char * secret = (char *) malloc(MAX_SECRET_LEN);
+                if(secret == NULL){
+                    msgId = STATUS_ALLOC_ERROR;
+                }else{
+                    msgId = authGetSecret(buffer1,secret);
+                    if(msgId == AUTH_GROUP_DSN_EXIST){
+                        msgId = STATUS_GROUP_DSN_EXIST;
+                    }else if(msgId == AUTH_IMPOSSIBLE_SERVER || msgId == AUTH_SENDING || msgId == AUTH_RECEIVING || msgId == AUTH_INVALID){
+                        msgId = STATUS_AUTH_COM;
+                    }else if(msgId == AUTH_OK ){
+                        // Compare secret
+                        if (strcmp(secret,buffer2)== 0){
+                            msgId = STATUS_OK;
+                        }else{
+                            msgId = STATUS_ACCSS_DENIED;
+                        }
                     }
                 }
-            }
+            } 
             // If authentication is successful establish connection with callback socket
             if(msgId == STATUS_OK){
                 // If connection with callback is unsuccessful it does not report the error 
