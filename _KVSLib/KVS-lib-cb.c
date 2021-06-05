@@ -30,9 +30,9 @@ void * callbackServerThread(void * arg){
             printf("Callback server thread is exiting.\n");
             #endif
             close(cb_sock[0]); // Close callback socket listening to connections
-            cb_sock[0] = -1;
+            cb_sock[0] = DISCONNECTED_SOCKET;
             close(cb_sock[1]);
-            cb_sock[1] = -1; 
+            cb_sock[1] = DISCONNECTED_SOCKET;
             free(cb_id); // Free callback id
             char cb_server_addr[MAX_LEN_CN_SERVER_ADDR];
             sprintf(cb_server_addr,"/tmp/cb%d",getpid());
@@ -133,9 +133,7 @@ void * callbackWrapperThread(void * arg){
 
 void callbackDisconnect(){
     close(cb_sock[0]); // Close callback socket listening to connections
-    cb_sock[0] = -1;
     close(cb_sock[1]); // Close callback socket listening to connections
-    cb_sock[1] = -1;
     #ifdef DEBUG_CALLBACK
     printf("Callback socket closed.\n");
     #endif
