@@ -341,7 +341,6 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
         return STATUS_ACCSS_DENIED;
     }
     // 2. Seach key
-    ENTRY * prev = NULL;
     // [READ LOCK ENTRIES] 
     pthread_rwlock_rdlock(&client->authGroup->entries_rwlock);
     ENTRY * searchEntry = client->authGroup->entries;

@@ -159,7 +159,6 @@ void callbackDeleteClient(int cb_sock){
 }
 
 void callbackFlag(char * key){
-    CALLBACK * prev = NULL;
     // [READ LOCK CALLBACKS]
     pthread_rwlock_rdlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
