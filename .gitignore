@@ -1,8 +1,4 @@
-.DS_Store
-*.o
-./_KVSLib/*.o
-./_KVSLocalServer/*.o
-./_KVSAuthServer/*.o
-./_KVSLib/KVSLib.a
 ./_KVSLocalServer/KVSLocalServer
 ./_KVSAuthServer/KVSAuthServer
+./examples/simpleClient/client
+./examples/threadClient/client
