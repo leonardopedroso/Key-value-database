@@ -12,7 +12,7 @@ KVSAuthServer.o: KVSAuthServer.c KVSAuthServer-com.h KVSAuthServer-data.h KVS_lo
 	gcc $(CFLAGS) -c KVSAuthServer.c
 
 KVSAuthServer: KVSAuthServer.o KVSAuthServer-com.o KVSAuthServer-data.o
-	gcc $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o KVSAuthServer-com.o -o KVSAuthServer -lpthread
+	gcc $(CFLAGS) KVSAuthServer.o KVSAuthServer-data.o KVSAuthServer-com.o -o KVSAuthServer
 
 clean: 
 	rm *.o KVSAuthServer
