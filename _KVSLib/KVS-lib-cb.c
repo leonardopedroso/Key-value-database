@@ -4,7 +4,7 @@
 // ---------- Global variables ----------
 pthread_t cbThread; // Thread for the callback
 CALLBACK * callbacks = NULL; // Pointer to list of callbacks
-static pthread_rwlock_t callbacks_rwlock = PTHREAD_MUTEX_INITIALIZER; // RW lock to protect callback list
+static pthread_rwlock_t callbacks_rwlock = PTHREAD_RWLOCK_INITIALIZER; // RW lock to protect callback list
 extern int cb_sock[2]; // callback socket
 
 
