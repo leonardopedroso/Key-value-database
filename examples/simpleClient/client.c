@@ -12,7 +12,7 @@ int main(){
     printf("PID: %d\n",getpid());
 
     char a[10] = "ab";
-    char b[10] = "cd";
+    char b[10] = "zeleo";
 
     int status = establish_connection(a,b);
     if(status!= SUCCESS){
