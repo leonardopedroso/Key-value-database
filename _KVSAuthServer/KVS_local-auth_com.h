@@ -4,7 +4,7 @@
 #include "KVS-lib-MACROS.h"
 
 // Server address
-#define SV_IP "192.168.0.107"
+#define SV_IP "127.0.0.1"
 // Server port number
 #define PORT_NUM 50002
 
@@ -17,7 +17,8 @@
 // Invalide request code
 #define REQ_CODE_INV -1
 
-typedef struct requestStruct{
+typedef struct requestStruct
+{
     // request id
     int id;
     // action code
@@ -37,7 +38,8 @@ typedef struct requestStruct{
 // Answer code for group already existent
 #define ANS_GROUP_ALREADY_EXISTS -3
 
-typedef struct answerStruct{
+typedef struct answerStruct
+{
     // request id
     int id;
     // answer code
