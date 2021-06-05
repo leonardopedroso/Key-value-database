@@ -19,8 +19,9 @@ int main(){
         printf("Error %d establishing connection.\n",status);
         exit(0);
     }
+    printf("Connection established\n");
 
-    char * out;
+    /*char * out;
     char key1[10] = "key1";
     char val1[10] = "val1";
 
@@ -30,7 +31,7 @@ int main(){
     }
     printf("Test set 1 | Write | Key: %s | Value: %s\n",key1,val1);
     if(get_value(key1,&out)!=0){
-        printf("GEt value error.\n");
+        printf("Get value error.\n");
         exit(0);
     }
     printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
@@ -48,7 +49,7 @@ int main(){
         printf("Delete value error.\n");
         exit(0);
     }
-    printf("Test set 1 | Deleye | Key: %s\n",key1);*/
+    printf("Test set 1 | Deleye | Key: %s\n",key1);
 
     char val2[10] = "val2";
 
@@ -84,13 +85,13 @@ int main(){
 
     /*char key3[10] = "key3";
     char val3[10] = "val3";
-    printf("Test set 3 | Write | Key: %s | Value: %s\n",key3,val3);*/
+    printf("Test set 3 | Write | Key: %s | Value: %s\n",key3,val3);
     getchar();
 
     if(close_connection() == SUCCESS){
         printf("Close connection succssefull.\n");
     }else{
         printf("Close connection error.\n");
-    }
+    }*/
     exit(0);
 }
