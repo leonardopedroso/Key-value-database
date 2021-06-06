@@ -59,6 +59,7 @@ int main(){
         printf("Establish connection error %d.\n",aux);
         exit(0);
     }
+    getchar();
 
     // Test set 3
     // Test set 3.1 | Using NULL keys

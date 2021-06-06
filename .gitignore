@@ -6,5 +6,9 @@ _KVSLocalServer/KVSLocalServer
 _KVSAuthServer/KVSAuthServer
 examples/simpleClient/client
 examples/threadClient/client
+
+examples/multiClients/client
+
 examples/fileTransfer/client1
 examples/fileTransfer/client2
+
