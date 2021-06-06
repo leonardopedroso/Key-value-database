@@ -388,7 +388,7 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
             // [READ UNLOCK ENTRIES]
             pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
-            return STATUS_GROUP_DSN_EXIST;
+            return STATUS_KEY_DSNT_EXIST;
         }
         // If key is found
         if(strcmp(searchEntry->key,key)==0){
@@ -434,7 +434,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
             // [WRITE UNLOCK ENTRIES]
             pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
-            return STATUS_GROUP_DSN_EXIST;
+            return STATUS_KEY_DSNT_EXIST;
         }
         // If key is found
         if(strcmp(searchEntry->key,key)==0){

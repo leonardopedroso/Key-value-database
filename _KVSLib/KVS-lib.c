@@ -115,6 +115,10 @@ int establish_connection (char * group_id, char * secret){
 }
 
 int put_value(char * key, char * value){
+    if(key == NULL || value == NULL){
+        return ERROR_INVALID_ARG_LEN;
+    }
+
     // Send put value request
     int status = queryKVSLocalServer(MSG_ID_PUT_VAL,key,value,strlen(value)+1,NULL,NULL);
     // Output corresponding error message
@@ -152,6 +156,8 @@ int get_value(char * key, char ** value){
             return ERROR_GROUP_DSNT_EXIST;
         case QUERY_ALLOC_ERROR:
             return ERROR_ALLOC;
+        case QUERY_KEY_DSNT_EXIST:
+            return ERROR_KEY_DSNT_EXIST;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
         default:
