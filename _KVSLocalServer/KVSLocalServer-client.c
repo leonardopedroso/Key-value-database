@@ -59,16 +59,20 @@ void * KVSLocalServerClientThread(void * client){
         }
         switch(msgId){
             case MSG_ID_PUT_VAL:{
-                // Copy key to croadcast callback if out value is valid
-                char * cpkey = (char*) malloc(strlen(buffer1)+1);
-                strcpy(cpkey,buffer1);
+                char * cpkey = NULL;
+                if(buffer1 != NULL){
+                    // Copy key to croadcast callback if out value is valid
+                    cpkey = (char*) malloc(strlen(buffer1)+1);
+                    strcpy(cpkey,buffer1);
+                }
                 // Output status to msgId just to avoid allocating another variable
                 // Cannot send group poiter as argument beacause it may loose validy 
                 // Group acess as to be check inside read lock entries
                 //printf("Put value | key: %s | value %s\n",buffer1,buffer2);
                 msgId = groupAddEntry((CLIENT *) client,buffer1,buffer2);
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
-                // Memory on buffer1 and buffer2 is not freed because it is used as the memory allocated for the key value pair
+                // Memory on buffer1 and buffer2 is not freed because it is used as the 
+                // memory allocated for the key value pair
                 // On error buffer1 and buffer2 are freed inside groupAddEntry
                 // Callbacks is success
                 if (msgId == STATUS_OK){

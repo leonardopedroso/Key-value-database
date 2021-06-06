@@ -60,8 +60,8 @@ int main(){
     }
 
     // Test set 3
-    /* Test set 3.1 | Using NULL keys
-    char *key2 = NULL;
+    // Test set 3.1 | Using NULL keys
+    /*char *key2 = NULL;
     char *val2 = NULL;*/
     // invalid key
     /*if((aux = put_value(key2,val1))!=0){
@@ -73,8 +73,8 @@ int main(){
         printf("Put value error %d.\n",aux);
         exit(0);
     }*/
-    /* Test set 3.2 | Using strings of just '\0'
-    char key3[] = "\0";
+    //Test set 3.2 | Using strings of just '\0'
+    /*char key3[] = "\0";
     char value3[] = "\0";*/
     // invalid key
     /*if((aux = put_value(key3,val1))!=0){
@@ -87,11 +87,52 @@ int main(){
         exit(0);
     }*/
 
-    // Test set 4
-    char *key2 = NULL;
+    // Test set 4 | get value using invalid keys
+    //char *key2 = NULL;
+    // invalid key
+    /*if((aux = get_value(key2,val1))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }*/
+    /*char key2[] = "a";
     if((aux = get_value(key2,val1))!=0){
         printf("Get value error %d.\n",aux);
         exit(0);
+    }*/
+
+    // Test set 5 | get value after put value
+    // Test set 5.1 | after strange key
+    /*char key2[] = "\0";
+    char *valGet;
+    if((aux = put_value(key2,val1))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }
+    if((aux = get_value(key2,&valGet))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }else{
+        printf("%s\n",valGet);
+    }
+    free(valGet);*/
+    // Test set 5.2 | get value, put value and delete value
+    if((aux = delete_value(key1))!=0){
+        printf("Could not delete value %d but not exiting.\n",aux);
+    }
+    if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Could not register callback %d but not exiting.\n",aux);
+    }
+    if((aux = put_value(key1,val1))!=0){
+        printf("Error putting value %d.\n",aux);
+    }
+    if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Could not register callback %d but not exiting.\n",aux);
+    }
+    if((aux = put_value(key1,val1))!=0){
+        printf("Error putting value %d.\n",aux);
+    }
+    if((aux = delete_value(key1))!=0){
+        printf("Error deleting value %d.\n",aux);
     }
 
     if(close_connection() == SUCCESS){
