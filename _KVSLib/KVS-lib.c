@@ -87,15 +87,22 @@ int establish_connection (char * group_id, char * secret){
     //(int msgId, char * str1, char * str2, uint64_t len2, char * str3, uint64_t * len3)
     int statusQuery = queryKVSLocalServer(getpid(),group_id, secret, strlen(secret)+1, NULL,NULL);
 
-    // Wait for the connection of the KVS local server
-    cb_sock[1] = accept(cb_sock[0], NULL, NULL);
-
     // If authentication was unsuccessful shutdown call back thread
-    if (statusQuery != QUERY_OK || cb_sock[1] == DISCONNECTED_SOCKET){ 
-        callbackDisconnect();
+    if (statusQuery == QUERY_OK){
+        // Wait for the connection of the KVS local server
+        cb_sock[1] = accept(cb_sock[0], NULL, NULL);
+        if(cb_sock[1] == DISCONNECTED_SOCKET){
+            shutdown(cb_sock[0],2);
+            close(cb_sock[0]); // Close callback socket listening to connections
+            remove(cb_server_addr);
+        }else{
+            // Start calback thread
+            pthread_create(&cbThread, NULL, &callbackServerThread, NULL);
+        }
     }else{
-        // Start calback thread
-        pthread_create(&cbThread, NULL, &callbackServerThread, NULL);
+        shutdown(cb_sock[0],2);
+        close(cb_sock[0]); // Close callback socket listening to connections
+        remove(cb_server_addr);
     }
 
     // Output corresponding error message

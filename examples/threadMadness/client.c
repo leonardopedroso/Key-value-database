@@ -8,20 +8,27 @@
 #define NUM_THREADS 5
 #define NUM_PUTS 10000
 
-#define TEST_PUT_DEL
+#define TEST_PUT
 
 void printChanged(char * key){
     printf("I am a callback function to tell you that %s changed!\n",key);
 }
 
 #ifdef TEST_PUT
+// One can try to do a delete ab on local server to check robustness
+// We can also see if all the keys are created and that there are no memory leaks
 void * threadFunc(void * arg){
     char key[40];
     char val[40];
     sprintf(val,"val_t%d",*((int *) arg));
+    int status;
     for(int i = 0; i< NUM_PUTS; i++){
         sprintf(key,"key_t%d_n%d",*((int *) arg),i);
-        put_value(key,val);
+        status = put_value(key,val);
+        if (status != SUCCESS){
+            printf("Error %d thread %d\n",status,*((int *) arg));
+            pthread_exit(NULL);
+        }
     }
     pthread_exit(NULL);
 }
