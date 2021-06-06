@@ -5,8 +5,6 @@
 #include "KVS-lib.h"
 
 #define OUTPUT_FILE "downloadClient2.txt"
-//#define OUTPUT_FILE "downloadClient2.jpg"
-//#define OUTPUT_FILE "downloadClient2.BMP"
 
 int main(){
 

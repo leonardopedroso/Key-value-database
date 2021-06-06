@@ -2,11 +2,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 #include "KVS-lib.h"
 
 #define INPUT_FILE "asyoulik.txt"
-//#define INPUT_FILE "church.jpg"
-//#define INPUT_FILE "marbles.BMP"
 
 int main(){
 
