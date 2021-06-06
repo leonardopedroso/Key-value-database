@@ -5,6 +5,7 @@
 
 void printChanged(char * key){
     printf("I am a callback function to tell you that %s changed!\n",key);
+    fflush(stdout);
 }
 
 
@@ -116,24 +117,17 @@ int main(){
     }
     free(valGet);*/
     // Test set 5.2 | get value, put value and delete value
-    if((aux = delete_value(key1))!=0){
-        printf("Could not delete value %d but not exiting.\n",aux);
-    }
-    if((aux = register_callback(key1,&printChanged))!=0){
-        printf("Could not register callback %d but not exiting.\n",aux);
-    }
-    if((aux = put_value(key1,val1))!=0){
-        printf("Error putting value %d.\n",aux);
-    }
-    if((aux = register_callback(key1,&printChanged))!=0){
-        printf("Could not register callback %d but not exiting.\n",aux);
-    }
-    if((aux = put_value(key1,val1))!=0){
-        printf("Error putting value %d.\n",aux);
-    }
-    if((aux = delete_value(key1))!=0){
-        printf("Error deleting value %d.\n",aux);
-    }
+    char *valGet;
+    printf("delete value %d\n", delete_value(key1));
+    printf("register callback %d\n", register_callback(key1,&printChanged));
+    printf("put value %d\n",put_value(key1,val1));
+    printf("register callback %d\n",register_callback(key1,&printChanged));
+    printf("put value %d\n",put_value(key1,val1));
+    printf("get value %d\n",get_value(key1,&valGet));
+    printf("gotten value %s\n",valGet);
+    printf("delete value %d\n",delete_value(key1));
+    printf("get value %d\n",get_value(key1,&valGet));
+    getchar();
 
     if(close_connection() == SUCCESS){
         printf("Close connection succssefull.\n");
