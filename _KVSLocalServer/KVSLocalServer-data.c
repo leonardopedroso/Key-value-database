@@ -302,6 +302,10 @@ int groupCheckExistence(char * group){
 }
 
 int groupAddEntry(CLIENT * client, char * key, char * value){
+    if(key == NULL || value == NULL){
+        return STATUS_KEY_DSNT_EXIST;
+    }
+
     //0. Allocate Entry block just in case  (to avoid doing it in the write lock)
     ENTRY * newEntry = (ENTRY * ) malloc(sizeof(ENTRY));
     if(newEntry == NULL){
@@ -368,6 +372,10 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
 }
 
 int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
+    if(key == NULL){
+        return STATUS_KEY_DSNT_EXIST;
+    }
+
     // [READ LOCK AuthClient]
     pthread_mutex_lock(&client->authGroup_mtx);
     // 1. Check if the authorized group address is valid 
@@ -388,7 +396,7 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
             // [READ UNLOCK ENTRIES]
             pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
-            return STATUS_GROUP_DSN_EXIST;
+            return STATUS_KEY_DSNT_EXIST;
         }
         // If key is found
         if(strcmp(searchEntry->key,key)==0){
@@ -414,6 +422,10 @@ int groupReadEntry(CLIENT * client, char * key, char ** val, uint64_t * valLen){
 }
 
 int groupDeleteEntry(struct clientStruct * client, char * key){
+    if(key == NULL){
+        return STATUS_KEY_DSNT_EXIST;
+    }
+    
     // [READ LOCK AuthClient]
     pthread_mutex_lock(&client->authGroup_mtx);
     // 1. Check if the authorized group address is valid 
@@ -434,7 +446,7 @@ int groupDeleteEntry(struct clientStruct * client, char * key){
             // [WRITE UNLOCK ENTRIES]
             pthread_mutex_unlock(&client->authGroup_mtx);
             // [READ UNLOCK AuthClient]
-            return STATUS_GROUP_DSN_EXIST;
+            return STATUS_KEY_DSNT_EXIST;
         }
         // If key is found
         if(strcmp(searchEntry->key,key)==0){

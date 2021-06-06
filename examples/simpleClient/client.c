@@ -11,89 +11,134 @@ void printChanged(char * key){
 int main(){
     printf("PID: %d\n",getpid());
 
+    int aux;
     char a[10] = "ab";
     char b[10] = "zeleo";
-
-    int status = establish_connection(a,b);
-    if(status!= SUCCESS){
-        printf("Error %d establishing connection.\n",status);
-        exit(0);
-    }
-    printf("Connection established\n");
-
     char * out;
     char key1[10] = "key1";
     char val1[10] = "val1";
 
-    int aux = put_value(key1,val1);
-
-    if(aux!=0){
+    // Test set 0 | Running without establishing connection
+    // put without establishing connection
+    /*if((aux = put_value(key1,val1))!=0){
         printf("Put value error %d.\n",aux);
         exit(0);
-    }
-    printf("Test set 1 | Write | Key: %s | Value: %s\n",key1,val1);
-    if(get_value(key1,&out)!=0){
-        printf("Get value error.\n");
+    }*/
+    // get without establishing connection
+    /*if((aux = get_value(key1,val1))!=0){
+        printf("Put value error %d.\n",aux);
         exit(0);
-    }
-    printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
-    free(out);
-
-    if(register_callback(key1,&printChanged)!= SUCCESS){
-        printf("Error on register callback.\n");
+    }*/
+    // register callback without establishing connection
+    /*if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Put value error %d.\n",aux);
         exit(0);
-    }
-    printf("Callback registed.\n");
-
-    getchar();
-
-    /*if(delete_value(key1)!=0){
-        printf("Delete value error.\n");
-        exit(0);
-    }
-    printf("Test set 1 | Deleye | Key: %s\n",key1);
-
-    char val2[10] = "val2";
-
-    if(put_value(key1,val2)!=0){
-        printf("Put value error.\n");
-        exit(0);
-    }
-
-    if(get_value(key1,&out)!=0){
-        printf("GEt value error.\n");
-        exit(0);
-    }
-    printf("Test set 1 | Read | Key: %s | Value: %s\n",key1,out);
-    free(out);
-
+    }*/
     
-    getchar();
+    // Test set 1
+    /*if((aux = establish_connection(a,b))!=0){
+        printf("Establish connection error %d.\n",aux);
+        exit(0);
+    }*/
+    /* Test set 1.1 | Registering callback without key
+    if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Register callback error %d.\n",aux);
+        fflush(stdout);
+        exit(0);
+    }*/
+    /* Test set 1.2 | Getting non-existent value
+    if((aux = get_value(key1,&printChanged))!=0){
+        printf("Get value error %d.\n",aux);
+        fflush(stdout);
+        exit(0);
+    }*/
 
-    char key2[10] = "key2";
-    char valkey2[100] = "val21123y473t8473t427mlkjv";
-    if(put_value(key2,valkey2)!=0){
-        printf("Put value error.\n");
+    // Tests with established connection
+    if((aux = establish_connection(a,b))!=0){
+        printf("Establish connection error %d.\n",aux);
         exit(0);
     }
-    printf("Test set 2 | Write | Key: %s | Value: %s\n",key2,valkey2);
-    if(get_value(key2,&out)!=0){
-        printf("Get value error.\n");
+
+    // Test set 3
+    // Test set 3.1 | Using NULL keys
+    /*char *key2 = NULL;
+    char *val2 = NULL;*/
+    // invalid key
+    /*if((aux = put_value(key2,val1))!=0){
+        printf("Put value error %d.\n",aux);
+        exit(0);
+    }*/
+    // invalid value
+    /*if((aux = put_value(key1,val2))!=0){
+        printf("Put value error %d.\n",aux);
+        exit(0);
+    }*/
+    //Test set 3.2 | Using strings of just '\0'
+    /*char key3[] = "\0";
+    char value3[] = "\0";*/
+    // invalid key
+    /*if((aux = put_value(key3,val1))!=0){
+        printf("Put value error %d.\n",aux);
+        exit(0);
+    }*/
+    // invalid value
+    /*if((aux = put_value(key1,val3))!=0){
+        printf("Put value error %d.\n",aux);
+        exit(0);
+    }*/
+
+    // Test set 4 | get value using invalid keys
+    //char *key2 = NULL;
+    // invalid key
+    /*if((aux = get_value(key2,val1))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }*/
+    /*char key2[] = "a";
+    if((aux = get_value(key2,val1))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }*/
+
+    // Test set 5 | get value after put value
+    // Test set 5.1 | after strange key
+    /*char key2[] = "\0";
+    char *valGet;
+    if((aux = put_value(key2,val1))!=0){
+        printf("Get value error %d.\n",aux);
         exit(0);
     }
-    printf("Test set 2 | Read | Key: %s | Value: %s\n",key2,out);
-    free(out);
-    
-
-    /*char key3[10] = "key3";
-    char val3[10] = "val3";
-    printf("Test set 3 | Write | Key: %s | Value: %s\n",key3,val3);
-    getchar();
+    if((aux = get_value(key2,&valGet))!=0){
+        printf("Get value error %d.\n",aux);
+        exit(0);
+    }else{
+        printf("%s\n",valGet);
+    }
+    free(valGet);*/
+    // Test set 5.2 | get value, put value and delete value
+    if((aux = delete_value(key1))!=0){
+        printf("Could not delete value %d but not exiting.\n",aux);
+    }
+    if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Could not register callback %d but not exiting.\n",aux);
+    }
+    if((aux = put_value(key1,val1))!=0){
+        printf("Error putting value %d.\n",aux);
+    }
+    if((aux = register_callback(key1,&printChanged))!=0){
+        printf("Could not register callback %d but not exiting.\n",aux);
+    }
+    if((aux = put_value(key1,val1))!=0){
+        printf("Error putting value %d.\n",aux);
+    }
+    if((aux = delete_value(key1))!=0){
+        printf("Error deleting value %d.\n",aux);
+    }
 
     if(close_connection() == SUCCESS){
         printf("Close connection succssefull.\n");
     }else{
         printf("Close connection error.\n");
-    }*/
+    }
     exit(0);
 }

@@ -125,6 +125,8 @@ int put_value(char * key, char * value){
             return ERROR_DISCONNECTED_SOCK;
         case QUERY_ACCSS_DENIED:
             return ERROR_ACCSS_DENIED;
+        case QUERY_KEY_DSNT_EXIST:
+            return ERROR_KEY_DSNT_EXIST;
         case QUERY_GROUP_DSN_EXIST:
             return ERROR_GROUP_DSNT_EXIST;
         case QUERY_ALLOC_ERROR:
@@ -152,6 +154,8 @@ int get_value(char * key, char ** value){
             return ERROR_GROUP_DSNT_EXIST;
         case QUERY_ALLOC_ERROR:
             return ERROR_ALLOC;
+        case QUERY_KEY_DSNT_EXIST:
+            return ERROR_KEY_DSNT_EXIST;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
         default:
@@ -174,6 +178,8 @@ int delete_value(char * key){
             return ERROR_GROUP_DSNT_EXIST;
         case QUERY_ALLOC_ERROR:
             return ERROR_ALLOC;
+        case QUERY_KEY_DSNT_EXIST:
+            return ERROR_KEY_DSNT_EXIST;
         case QUERY_COM_ERROR:
             return ERROR_COM_SERVER;
         case QUERY_AUTH_COM:

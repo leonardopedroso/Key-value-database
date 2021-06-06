@@ -68,7 +68,7 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
     // ---------- Search callback and assign cb_id ----------
     int cb_id = 0;
     // [WRITE LOCK CALLBACKS]
-    pthread_rwlock_rdlock(&callbacks_rwlock);
+    pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     if(callbacks == NULL){
         callbacks = newCallback;
@@ -78,12 +78,13 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
             searchPointer = searchPointer->prox;
             cb_id++;
         }
+        newCallback->cb_id = cb_id;
         searchPointer->prox = newCallback;
     }
     // [UNLOCK CALLBACKS]
     pthread_rwlock_unlock(&callbacks_rwlock);
     #ifdef DEBUG_CALLBACK
-    printf("Registered callback id: %d.\n",cb_id);
+    printf("Created callback block id: %d.\n",cb_id);
     #endif
     return cb_id;
 }
