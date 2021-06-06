@@ -4,6 +4,7 @@
 
 _KVSLocalServer/KVSLocalServer
 _KVSAuthServer/KVSAuthServer
+examples/threadMadness/client
 examples/simpleClient/client
 examples/threadClient/client
 

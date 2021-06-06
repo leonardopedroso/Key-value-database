@@ -8,10 +8,13 @@
 #define NUM_THREADS 5
 #define NUM_PUTS 10000
 
+#define TEST_PUT_DEL
+
 void printChanged(char * key){
     printf("I am a callback function to tell you that %s changed!\n",key);
 }
 
+#ifdef TEST_PUT
 void * threadFunc(void * arg){
     char key[40];
     char val[40];
@@ -22,6 +25,27 @@ void * threadFunc(void * arg){
     }
     pthread_exit(NULL);
 }
+#endif
+
+#ifdef TEST_PUT_DEL
+void * threadFunc(void * arg){
+    char key[40];
+    char val[40];
+    sprintf(val,"val_t%d",*((int *) arg));
+    if (*((int*)arg)%2 == 0){
+        for(int i = 0; i< NUM_PUTS; i++){
+            sprintf(key,"key_n%d",i);
+            put_value(key,val);
+        }
+    }else{
+        for(int i = NUM_PUTS-1; i >= 0; i--){
+            sprintf(key,"key_n%d",i);
+            delete_value(key);
+        }
+    }
+    pthread_exit(NULL);
+}
+#endif
 
 int main(){
 
@@ -46,6 +70,7 @@ int main(){
     for(int i = 0; i < NUM_THREADS; i++){
         pthread_join(threads[i],NULL);
     }
+    free(threadNum);
     printf("All threads joined\n");
 
     if(close_connection() == SUCCESS){

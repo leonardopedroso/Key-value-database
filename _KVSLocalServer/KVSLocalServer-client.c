@@ -245,18 +245,22 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
     if(secretAuth == NULL){
         return  STATUS_ALLOC_ERROR;
     }else{
-        int status = authGetSecret(groupId,&secretAuth[0]);
+        int status = authGetSecret(groupId,secretAuth);
         if(status == AUTH_GROUP_DSN_EXIST){
+            free(secretAuth);
             return STATUS_GROUP_DSN_EXIST;
         }else if(status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+            free(secretAuth);
             return STATUS_AUTH_COM;
         }else if(status == AUTH_OK ){
             // Compare secret
             if(strcmp(secretAuth,secret)!= 0){
+                free(secretAuth);
                 return STATUS_ACCSS_DENIED;
             }
         }
     }
+    free(secretAuth);
     client->connectivityStatus = CONN_STATUS_CONNECTED;
     // ----------- Authenticate secret ----------
     client->authGroup = searchPointer;
