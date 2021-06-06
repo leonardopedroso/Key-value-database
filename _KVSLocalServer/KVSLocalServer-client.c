@@ -69,6 +69,7 @@ void * KVSLocalServerClientThread(void * client){
                 // Cannot send group poiter as argument beacause it may loose validy 
                 // Group acess as to be check inside read lock entries
                 //printf("Put value | key: %s | value %s\n",buffer1,buffer2);
+                // buffer2Len has length of second element
                 msgId = groupAddEntry((CLIENT *) client,buffer1,buffer2);
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
                 // Memory on buffer1 and buffer2 is not freed because it is used as the 
@@ -232,6 +233,14 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
         }
         // Check until group is found
         if(strcmp(searchPointer->id,groupId) == 0){
+            // The group found cannot be deleted while mutex is locked so it does not become invalid
+            // client cannot acess the pointer while mutex is locked so there it does not access something without comparing the secret 
+            // There is no loss of efficency because mutex auth group only block delete of this specific group, 
+            // and gets and puts of this client, which had to wait either away
+            // It allows to lock groups for much less time
+             // [LOCk Auth clinet]
+            pthread_mutex_lock(&client->authGroup_mtx);
+            client->authGroup = searchPointer;
             break;
         }
         // Check next element on the list
@@ -243,24 +252,35 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
     // If group exists check if secret matches
     char * secretAuth = (char *) malloc(MAX_SECRET_LEN);
     if(secretAuth == NULL){
+        client->authGroup = NULL;
+        pthread_mutex_unlock(&client->authGroup_mtx);
         return  STATUS_ALLOC_ERROR;
     }else{
         int status = authGetSecret(groupId,secretAuth);
         if(status == AUTH_GROUP_DSN_EXIST){
+            client->authGroup = NULL;
+            pthread_mutex_unlock(&client->authGroup_mtx);
             free(secretAuth);
             return STATUS_GROUP_DSN_EXIST;
         }else if(status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+            client->authGroup = NULL;
+            pthread_mutex_unlock(&client->authGroup_mtx);
             free(secretAuth);
             return STATUS_AUTH_COM;
         }else if(status == AUTH_OK ){
             // Compare secret
             if(strcmp(secretAuth,secret)!= 0){
+                client->authGroup = NULL;
+                pthread_mutex_unlock(&client->authGroup_mtx);
                 free(secretAuth);
                 return STATUS_ACCSS_DENIED;
             }
         }
     }
+    pthread_mutex_unlock(&client->authGroup_mtx);
+    // [UNLOCk Auth clinet]
     free(secretAuth);
+    // Thsi variable does not really need any synch (the connection)
     client->connectivityStatus = CONN_STATUS_CONNECTED;
     // ----------- Authenticate secret ----------
     client->authGroup = searchPointer;

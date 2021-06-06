@@ -206,7 +206,7 @@ int groupDelete(char * groupId){
 }
 
 // Delete all entries of a given group
-// No need to use thread safe code, because it is ensured that one this function runs
+// No need to use thread safe code, because it is ensured that when this function runs
 // it is not possible to acess the group block or its entries
 void entriesDelete(GROUP * group){
     // Allocate vectors to entry list 
@@ -325,7 +325,7 @@ int groupAddEntry(CLIENT * client, char * key, char * value){
     // 1. Check if the authorized group address is valid 
     if(client->connectivityStatus != CONN_STATUS_CONNECTED || client->authGroup == NULL){
         pthread_mutex_unlock(&client->authGroup_mtx);
-        // [READ UNLOCK AuthClient]
+        // [READ UNLOCK AuthGroup]
         // Free memory on error
         free(key);
         free(value);
