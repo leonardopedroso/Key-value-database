@@ -9,14 +9,6 @@ extern int cb_sock[2]; // callback socket
 
 
 void * callbackServerThread(void * arg){
-    // Wait for the connection of the KVS local server
-    cb_sock[1] = accept(cb_sock[0], NULL, NULL);
-    // Catch error waiting for a connection
-    if(cb_sock[1] == -1){
-        close(cb_sock[0]);
-        cb_sock[0] = -1;
-        pthread_exit(NULL);
-    }
     #ifdef DEBUG_CALLBACK
     printf("Callback server connected to KVS local server.\n");
     #endif

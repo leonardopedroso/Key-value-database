@@ -83,16 +83,21 @@ int establish_connection (char * group_id, char * secret){
     printf("Callback socket is listening for KVS local server.\n");
     #endif
 
-    // Start calback thread
-    pthread_create(&cbThread, NULL, &callbackServerThread, NULL);
-
     // ---------- Query KVS Local server for authentication
     //(int msgId, char * str1, char * str2, uint64_t len2, char * str3, uint64_t * len3)
     int statusQuery = queryKVSLocalServer(getpid(),group_id, secret, strlen(secret)+1, NULL,NULL);
+
+    // Wait for the connection of the KVS local server
+    cb_sock[1] = accept(cb_sock[0], NULL, NULL);
+
     // If authentication was unsuccessful shutdown call back thread
-    if (statusQuery != QUERY_OK){ 
+    if (statusQuery != QUERY_OK || cb_sock[1] == DISCONNECTED_SOCKET){ 
         callbackDisconnect();
+    }else{
+        // Start calback thread
+        pthread_create(&cbThread, NULL, &callbackServerThread, NULL);
     }
+
     // Output corresponding error message
     switch (statusQuery){
         case QUERY_OK:
@@ -192,6 +197,7 @@ int delete_value(char * key){
 int register_callback(char * key, void (*callback_function)(char *)){
     // Check if callback server is up and running
     if(cb_sock[1] == DISCONNECTED_SOCKET){
+        printf("a\n");
         return ERROR_CALLBACK_COM_ERROR;
     }
     // Add to callback list and find callback id in the aplication

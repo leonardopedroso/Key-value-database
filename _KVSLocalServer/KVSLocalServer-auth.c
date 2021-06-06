@@ -27,9 +27,9 @@
 // Return value for error in sendto
 #define REC_SENDING -5
 // Seconds to verify in the timer
-#define REC_TIMER_TIME_SEC 2
+#define REC_TIMER_TIME_SEC 0
 // Microsseconds to verify in the timer
-#define REC_TIMER_TIME_MSEC 0
+#define REC_TIMER_TIME_MSEC 5e5
 // Number of times to try to contact the server without receiving answer
 #define REC_MAX_TRIES 5
 

@@ -62,7 +62,7 @@ int main(void){
         // handles the request based on its code
         switch(req.code){
             case REQ_CREATE:
-                printf("Add pair request from   %s, port %u\n",
+                printf("Add pair request from    %s, port %u\n",
                     inet_ntoa(claddr.sin_addr),ntohs(claddr.sin_port));
                 printf("Group -  %s\n",req.group);
                 printf("Secret - %s\n",req.secret);
