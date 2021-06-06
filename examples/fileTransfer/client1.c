@@ -3,32 +3,24 @@
 #include <unistd.h>
 #include "KVS-lib.h"
 
-void printChanged(char * key){
-    printf("I am a callback function to tell you that %s changed!\n",key);
-}
-
-
 int main(){
-    printf("PID: %d\n",getpid());
 
-    char a[10] = "ab";
-    char b[10] = "zeleo";
+    char group[10] = "asyoulik";
+    char secret[10] = "zeleo";
 
-    int status = establish_connection(a,b);
+    int status = establish_connection(group,secret);
     if(status!= SUCCESS){
         printf("Error %d establishing connection.\n",status);
         exit(0);
     }
     printf("Connection established\n");
 
-    char * out;
+    /*char * out;
     char key1[10] = "key1";
     char val1[10] = "val1";
 
-    int aux = put_value(key1,val1);
-
-    if(aux!=0){
-        printf("Put value error %d.\n",aux);
+    if(put_value(key1,val1)!=0){
+        printf("Put value error.\n");
         exit(0);
     }
     printf("Test set 1 | Write | Key: %s | Value: %s\n",key1,val1);

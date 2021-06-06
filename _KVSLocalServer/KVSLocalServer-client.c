@@ -40,29 +40,7 @@ void * KVSLocalServerClientThread(void * client){
             ((CLIENT *)client)->PID = msgId;
             ((CLIENT *)client)->cb_sock = DISCONNECTED_SOCKET;
             // Output status to msgId just to avoid allocating another variable
-            // Check if group exist on this KVS Local server
-            msgId = groupCheckExistence(buffer1);
-            if(msgId == STATUS_OK){
-                // If group exists check if secret matches
-                char * secret = (char *) malloc(MAX_SECRET_LEN);
-                if(secret == NULL){
-                    msgId = STATUS_ALLOC_ERROR;
-                }else{
-                    msgId = authGetSecret(buffer1,secret);
-                    if(msgId == AUTH_GROUP_DSN_EXIST){
-                        msgId = STATUS_GROUP_DSN_EXIST;
-                    }else if(msgId == AUTH_IMPOSSIBLE_SERVER || msgId == AUTH_SENDING || msgId == AUTH_RECEIVING || msgId == AUTH_INVALID){
-                        msgId = STATUS_AUTH_COM;
-                    }else if(msgId == AUTH_OK ){
-                        // Compare secret
-                        if (strcmp(secret,buffer2)== 0){
-                            msgId = STATUS_OK;
-                        }else{
-                            msgId = STATUS_ACCSS_DENIED;
-                        }
-                    }
-                }
-            } 
+            msgId = clientAuth(((CLIENT *)client), buffer1, buffer2);                   
             // If authentication is successful establish connection with callback socket
             if(msgId == STATUS_OK){
                 // If connection with callback is unsuccessful it does not report the error 
@@ -258,12 +236,24 @@ int clientAuth(CLIENT * client, char * groupId, char * secret){
     pthread_rwlock_unlock(&groups_rwlock);
     // [READ UNLOCK groups]
     // ----------- Authenticate secret ----------
-    // [CHECK AUTHENTICATION AUTH SERVER]
-    // switch(authenticated)
-    // case OK:
-        client->connectivityStatus = CONN_STATUS_CONNECTED;
-        // return query status
-        
+    // If group exists check if secret matches
+    char * secretAuth = (char *) malloc(MAX_SECRET_LEN);
+    if(secretAuth == NULL){
+        return  STATUS_ALLOC_ERROR;
+    }else{
+        int status = authGetSecret(groupId,&secretAuth[0]);
+        if(status == AUTH_GROUP_DSN_EXIST){
+            return STATUS_GROUP_DSN_EXIST;
+        }else if(status == AUTH_IMPOSSIBLE_SERVER || status == AUTH_SENDING || status == AUTH_RECEIVING || status == AUTH_INVALID){
+            return STATUS_AUTH_COM;
+        }else if(status == AUTH_OK ){
+            // Compare secret
+            if(strcmp(secretAuth,secret)!= 0){
+                return STATUS_ACCSS_DENIED;
+            }
+        }
+    }
+    client->connectivityStatus = CONN_STATUS_CONNECTED;
     // ----------- Authenticate secret ----------
     client->authGroup = searchPointer;
     return STATUS_OK;
