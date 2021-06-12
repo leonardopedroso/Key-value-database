@@ -1,103 +1,162 @@
-#include "ui.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "KVSLib_ui.h"
 #include "KVS-lib-MACROS.h"
 
-void printMenu(void){
+void printUI(void){
     printf("\n");
+    printf("Group id and secret up to %d characters\n",MAX_GROUP_LEN-1);
     printf("Possible commands:\n");
-    printf("Group id up to %d characters\n",MAX_GROUP_LEN-1);
-    printf("%s%s[<groupID>]\tCreates a new group with the group\n",CREATE_CMD,
-        ARG_DELIM);
-    printf("\t\t\tidentifier specified\n");
-    printf("%s%s[<groupID>]\tRemoves the group and all associated data\n",
-        DELETE_CMD,ARG_DELIM);
-    printf("%s%s[<groupID>]\tPrints the secret and the number of key-value\n",
-        GROUP_CMD,ARG_DELIM);
-    printf("\t\t\tpairs of a group\n");
-    printf("%s\t\t\tLists all currently and past connected applications,\n",
-        APPS_CMD);
-    printf("\t\t\tprinting their PID, connection establishing time and\n");
-    printf("\t\t\tconnection close time (if not currently connected\n");
-    printf("%s\t\t\tControlled shutdown of KVS local server\n",
-        EXIT_CMD);
+    printf(CONNECT_CMD ARG_DELIM "[<groupID>]" ARG_DELIM "[<secret>]"
+        "\tConnects to a KVSLocalServer giving the secret\n");
+    printf(PUT_CMD ARG_DELIM "[<key>]" ARG_DELIM "[<value>]"
+        "\t\tRemoves the group and all associated data\n");
+    printf(GET_CMD ARG_DELIM "[<key>] \t\t\tGet the value of a key\n");
+    printf(DEL_CMD " [<key>] \t\t\tDelete key-value pair\n");
+    printf(CLOSE_CMD "\t\t\t\tCloses the connection\n");
 }
 
 // \brief Gets a string from the keyboard, handles the errors and prints them
 // and takes the new line character from it
-// \param input string to pass the string through
+// \param input unallocated char pointer to pass the string through
 // \param len length of the string to be taken from the keyboard
-// \return On success, returns 0 and, on error, returns -1
-int getStrFromStdin(char input[],int len){
-    memset(input,'\0',MAX_INPUT);
+// \return On success, returns 0 and, on error on fgets, returns ERR_FGETS. On
+// input too large, ERR_TOO_LARGE. On memory allocation error, return ERR_ALLOC
+int getStrFromStdin(char **input){
+    // allocates memory
+    *input = (char *)calloc(MAX_INPUT,sizeof(char));
+    if(*input == NULL){
+        printf("Error allocating input\n");
+        return ERR_ALLOC;
+    }
 
-    if(fgets(input,len,stdin)==NULL){
-        printf("Error in getting input.\n");
-        return -1;
+    // initializes the string
+    memset(*input,'\0',MAX_INPUT);
+
+    // gets input from user
+    if(fgets(*input,MAX_INPUT,stdin)==NULL){
+        // on error, frees input
+        free(*input);
+        printf("Error on fgets\n");
+        return ERR_FGETS;
     }
     // If it does not find the new line character, it clears completely stdin
-    if(memchr(input,'\n',len) == NULL){
+    if(memchr(*input,'\n',MAX_INPUT) == NULL){
         while(getchar() != '\n');
-        
-        printf("Input too large.\n");
-        return -1;
+        free(*input);
+        printf("Input too large\n");
+        return ERR_TOO_LARGE;
     }
-    // the last char of input must be \n if MAX_INPUT is respected
-    input[strlen(input)-1] = '\0';
+    // the last char of input must be \n or \0 if MAX_INPUT is respected
+    (*input)[strlen(*input)-1] = '\0';
 
-    return 0;
+    return SUCCESS;
 }
 
-int getCommand(char *groupName){
-    char input[MAX_INPUT];
-    char *arg[2], *savePtr;
+int getCommandStrs(char *input,char **command,char **args,int *nArgs){
+    char *auxStr,*savePtr;
 
-    //*groupName = NULL;
-
-    if(getStrFromStdin(input,MAX_INPUT)){
-        return 0;
+    // initialize variables
+    *nArgs = 0;
+    *command = NULL;
+    for(int i=0; i<MAX_ARGS;i++){
+        args[i] = NULL;
     }
 
-    // gets the pointers to each token
-    arg[0] = strtok_r(input,ARG_DELIM,&savePtr);
-    arg[1] = strtok_r(NULL,ARG_DELIM,&savePtr);
-
-    // if none is given
-    if(arg[0] == NULL){
-        printf("No argument given.\n");
-        return 0;
-    } 
-    else if(arg[1] == NULL){
-        // only one arg given
-        if(strcmp(APPS_CMD,arg[0]) == 0){
-            return APPS_DES;
-        }else if(strcmp(EXIT_CMD,arg[0]) == 0){
-            return EXIT_DES;
+    // gets the command string
+    auxStr = strtok_r(input,ARG_DELIM,&savePtr);
+    if(auxStr == NULL){
+        return EMPTY;
+    }else{
+        *command = (char *)calloc(strlen(auxStr)+1,sizeof(char));
+        if(*command == NULL){
+            printf("Error allocating command\n");
+            return ERR_ALLOC;
         }
-    } 
-    else if(strtok_r(NULL,ARG_DELIM,&savePtr) == NULL){
-        // two args given
-        // the second arg is the group name and cannot be bigger than MAX_GROUP_ID
-        if(strlen(arg[1]) <= MAX_GROUP_LEN){
-            //*groupName = (char *) calloc(strlen(arg[1])+1,sizeof(char)); //!!
-            strcpy(groupName,arg[1]);
+        strcpy(*command,auxStr);
+    }
 
-            if(strcmp(CREATE_CMD,arg[0]) == 0){
-                return CREATE_DES;
-            } else if(strcmp(DELETE_CMD,arg[0]) == 0){
-                return DELETE_DES;
-            } else if(strcmp(GROUP_CMD,arg[0]) == 0){
-                return GROUP_DES;
+    // gets the args strings
+    for(int i = 0; i < MAX_ARGS; i++){
+        auxStr = strtok_r(NULL,ARG_DELIM,&savePtr);
+        if(auxStr!=NULL){
+            args[i] = (char *)calloc(strlen(auxStr)+1,sizeof(char));
+            if(args[i] == NULL){
+                printf("Error allocating arg\n");
+                return ERR_ALLOC;
             }
-        } else{
-            printf("Group name too large.\n");
-            return 0;
+            strcpy(args[i],auxStr);
+            (*nArgs)++;
+        }else{
+            break;
         }
     }
-    // if too many are given since all commands considered only take two args
-    else {
-        printf("Too many arguments.\n");
-        return 0;
+
+    // searches for any more arg
+    if(*nArgs == MAX_ARGS){
+        auxStr = strtok_r(NULL,ARG_DELIM,&savePtr);
+        if(auxStr != NULL){
+            *nArgs = MAX_ARGS + 1;
+        }
     }
 
-    printf("Invalid command.\n");
-    return 0;
+    return SUCCESS;
+}
+
+int promptInvNArgs(char *command,int des,int nArgs,int neededNArgs){
+    if(nArgs < neededNArgs){
+        printf("%s: Too few arguments\n",command);
+        return INV_DES;
+    }else if(nArgs > neededNArgs){
+        printf("%s: Too many arguments\n",command);
+        return INV_DES;
+    }
+
+    return des;
+}
+
+int getCommand(char **args){
+    char *input, *command;
+    int aux, nArgs, des;
+
+    // initializes the args
+    for(int i=0; i<MAX_ARGS;i++){
+        args[i] = NULL;
+    }
+
+    // gets input from stdin allocating it in the heap
+    aux = getStrFromStdin(&input);
+    if(aux!=SUCCESS){
+        return aux;
+    }
+
+    aux = getCommandStrs(input,&command,args,&nArgs);
+    if(aux != SUCCESS){
+        // frees all the memory except for the args that are assumed to be free
+        // outside
+        free(input);
+        free(command);
+        return aux;
+    }
+
+    if(strcmp(command,CONNECT_CMD) == 0){
+        des = promptInvNArgs(CONNECT_CMD,CONNECT_DES,nArgs,2);
+    }else if(strcmp(command,PUT_CMD) == 0){
+        des = promptInvNArgs(PUT_CMD,PUT_DES,nArgs,2);
+    }else if(strcmp(command,GET_CMD) == 0){
+        des = promptInvNArgs(GET_CMD,GET_DES,nArgs,1);
+    }else if(strcmp(command,DEL_CMD) == 0){
+        des = promptInvNArgs(DEL_CMD,DEL_DES,nArgs,1);
+    }else if(strcmp(command,CLOSE_CMD) == 0){
+        des = promptInvNArgs(CLOSE_CMD,CLOSE_DES,nArgs,0);
+    }else{
+        printf("%s: Invalid command\n",command);
+        des = INV_DES;
+    }
+
+    free(input);
+    free(command);
+    return des;
 }

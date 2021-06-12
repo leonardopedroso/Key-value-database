@@ -1,15 +1,15 @@
 CFLAGS = -g -Wall
 
-all: client KVSLib_ui
+all: client
 
-KVSLib_ui.o: KVSLib_ui.c
+KVSLib_ui.o: KVSLib_ui.c KVS-lib-MACROS.h KVS-lib.h
 	gcc -c  $(CFLAGS) KVSLib_ui.c
 
-client.o: client.c
+client.o: client.c KVS-lib-MACROS.h KVS-lib.h
 	gcc -c  $(CFLAGS) client.c
 
-cliet: client.o KVSLib_ui.o KVS-lib.a
-	gcc client.o KVS-lib.a KVSLib_ui.o -o client
+client: client.o KVSLib_ui.o KVS-lib.a
+	gcc client.o KVSLib_ui.o KVS-lib.a -o client
 	
 clean:
 	rm client *.o
