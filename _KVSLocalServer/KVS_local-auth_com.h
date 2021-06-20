@@ -7,7 +7,7 @@
 //#define SV_IP "127.0.0.1"
 #define SV_IP "192.168.0.107"
 // Server port number
-#define PORT_NUM 50002
+#define PORT_NUM 5002
 
 // Request code for asking the secret from the server
 #define REQ_SECRET 0

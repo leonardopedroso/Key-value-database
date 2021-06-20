@@ -77,7 +77,12 @@ void * KVSLocalServerClientThread(void * client){
                 // On error buffer1 and buffer2 are freed inside groupAddEntry
                 // Callbacks is success
                 if (msgId == STATUS_OK){
-                    callbackFlag(cpkey);
+                    pthread_mutex_lock(&((CLIENT *) client)->authGroup_mtx);
+                    char * cp_group_id = (char *) malloc(strlen(((CLIENT *) client)->authGroup->id)+1);
+                    strcpy(cp_group_id,((CLIENT *) client)->authGroup->id);
+                    pthread_mutex_unlock(&((CLIENT *) client)->authGroup_mtx);
+                    callbackFlag(cpkey,cp_group_id);
+                    free(cp_group_id);
                 }
                 free(cpkey);
                 break;
@@ -106,8 +111,13 @@ void * KVSLocalServerClientThread(void * client){
                 ansQueryKVSLocalServer(((CLIENT *)client)->clientSocket,msgId,NULL,0);
                 // Callbacks 
                 if (msgId == STATUS_OK){
-                    callbackFlag(buffer1);
-                    callbackDeleteKey(buffer1);
+                    pthread_mutex_lock(&((CLIENT *) client)->authGroup_mtx);
+                    char * cp_group_id = (char *) malloc(strlen(((CLIENT *) client)->authGroup->id)+1);
+                    strcpy(cp_group_id,((CLIENT *) client)->authGroup->id);
+                    pthread_mutex_unlock(&((CLIENT *) client)->authGroup_mtx);
+                    callbackFlag(buffer1,cp_group_id);
+                    callbackDeleteKey(buffer1,cp_group_id);
+                    free(cp_group_id);
                 }
                 // Free memory
                 free(buffer1);
