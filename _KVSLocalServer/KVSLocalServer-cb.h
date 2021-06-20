@@ -8,6 +8,7 @@
 
 typedef struct callbackStruct{
     char * key;
+    char * group_id;
     int cb_sock;
     int cb_id;
 
@@ -17,8 +18,8 @@ typedef struct callbackStruct{
 void callbackConnect(CLIENT * client);
 int callbackRegister(CLIENT* client, char * key, char * cb_id);
 
-void callbackDeleteKey(char * key);
+void callbackDeleteKey(char * key, char * group_id);
 void callbackDeleteClient(int cb_sock);
-void callbackFlag(char * key);
+void callbackFlag(char * key, char * group_id);
 
 #endif

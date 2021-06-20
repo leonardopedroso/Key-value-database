@@ -36,6 +36,12 @@ void callbackConnect(CLIENT * client){
 }
 
 int callbackRegister(CLIENT* client, char * key, char * cb_id){
+    // Create callback outside mutex
+    CALLBACK * newCallback = (CALLBACK * ) malloc(sizeof(CALLBACK));
+    if (newCallback == NULL){
+        return STATUS_ALLOC_ERROR;
+    }
+    char * group_id;
     // ---------- Check authentication and if client has access to that key
     // [MUTEX AuthGroup]
     pthread_mutex_lock(&client->authGroup_mtx);
@@ -45,12 +51,13 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
         // [READ UNLOCK AuthClient]
         // Free memory on error
         free(key);
+        free(newCallback);
         #ifdef DEBUG_CALLBACK
         printf("Unauthorized to register callback of client PID: %d.\n",client->PID);
         #endif
         return STATUS_ACCSS_DENIED;
     }
-    pthread_mutex_unlock(&client->authGroup_mtx);
+    
     // 2. Check if key exists
     // [WRITE LOCK ENTRIES] 
     pthread_rwlock_rdlock(&client->authGroup->entries_rwlock);
@@ -59,25 +66,28 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
         // If end of the list is reached
         if (searchEntry == NULL){
             free(key);
+            free(newCallback);
             #ifdef DEBUG_CALLBACK
             printf("Key not found to register callback of client PID: %d.\n",client->PID);
             #endif
+            pthread_mutex_unlock(&client->authGroup_mtx);
             pthread_rwlock_unlock(&client->authGroup->entries_rwlock);
             return STATUS_KEY_DSNT_EXIST;
         }
         // If key is found
         if(strcmp(searchEntry->key,key)==0){
             pthread_rwlock_unlock(&client->authGroup->entries_rwlock);
+            group_id = (char *) malloc(strlen(client->authGroup->id)+1);
+            strcpy(group_id,client->authGroup->id);
+            pthread_mutex_unlock(&client->authGroup_mtx);
+            
             break;
         }
         searchEntry = searchEntry->prox;
     }
-    // ---------- Create and add callback
-    CALLBACK * newCallback = (CALLBACK * ) malloc(sizeof(CALLBACK));
-    if (newCallback == NULL){
-        free(key);
-        return STATUS_ALLOC_ERROR;
-    }
+    
+    // ---------- Add callback
+    newCallback->group_id = group_id;
     newCallback->prox = NULL;
     newCallback->cb_sock = client->cb_sock;
     newCallback->key = key;
@@ -101,7 +111,7 @@ int callbackRegister(CLIENT* client, char * key, char * cb_id){
     return STATUS_OK;
 }
 
-void callbackDeleteKey(char * key){
+void callbackDeleteKey(char * key, char * group_id){
     CALLBACK * prev = NULL;
     // [WRITE LOCK CALLBACKS]
     pthread_rwlock_wrlock(&callbacks_rwlock);
@@ -109,14 +119,17 @@ void callbackDeleteKey(char * key){
     while(searchPointer != NULL){
         // Find callbacks with key
         if(strcmp(searchPointer->key,key) ==0){
-            if(prev == NULL){
-                callbacks = searchPointer->prox;
-            }else{
-                prev->prox = searchPointer->prox;
+            if(strcmp(searchPointer->group_id, group_id) == 0){
+                if(prev == NULL){
+                    callbacks = searchPointer->prox;
+                }else{
+                    prev->prox = searchPointer->prox;
+                }
+                // Free memory
+                free(searchPointer->key);
+                free(searchPointer->group_id);
+                free(searchPointer);
             }
-            // Free memory
-            free(searchPointer->key);
-            free(searchPointer);
         }
         prev = searchPointer;
         searchPointer = searchPointer->prox;
@@ -145,6 +158,7 @@ void callbackDeleteClient(int cb_sock){
             searchPointer = searchPointer->prox;
             // Free memory
             free(aux->key);
+            free(aux->group_id);
             free(aux);
             continue;
         }
@@ -158,17 +172,19 @@ void callbackDeleteClient(int cb_sock){
     #endif
 }
 
-void callbackFlag(char * key){
+void callbackFlag(char * key, char * group_id){
     // [READ LOCK CALLBACKS]
     pthread_rwlock_rdlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     while(searchPointer != NULL){
         // Find callbacks with key
         if(strcmp(searchPointer->key,key) ==0){
-            if(write(searchPointer->cb_sock,&searchPointer->cb_id,sizeof(int))<=0){
-                // Nothing more is done because it would require a write lock
-                // A write lock is too strong for a function executed so many times
-                close(searchPointer->cb_sock);
+            if(strcmp(searchPointer->group_id, group_id) == 0){
+                if(write(searchPointer->cb_sock,&searchPointer->cb_id,sizeof(int))<=0){
+                    // Nothing more is done because it would require a write lock
+                    // A write lock is too strong for a function executed so many times
+                    close(searchPointer->cb_sock);
+                }
             }
         }
         searchPointer = searchPointer->prox;
