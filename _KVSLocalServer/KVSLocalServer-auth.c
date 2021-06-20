@@ -97,9 +97,6 @@ int sendReceive(REQUEST *req,ANSWER *ans){
     struct sockaddr_in sender;
     int aux;
 
-    // fills the id with the present number of request
-    req->id = numReq;
-
     pthread_mutex_lock(&sendReceiveMutex);
 
     if(sendto(cfd,req,sizeof(REQUEST),0,(struct sockaddr*)&svaddr,
