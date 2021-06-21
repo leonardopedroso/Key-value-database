@@ -94,15 +94,12 @@ void * callbackWrapperThread(void * arg){
         }
         searchPointer = searchPointer->prox;
     }
-    printf("c\n");
     if (searchPointer == NULL){
         pthread_rwlock_unlock(&callbacks_rwlock);
         pthread_exit(NULL);
-        printf("d\n");
         // Loss of synch
         // Callbacks were cleared connection was closed
     }else{
-        printf("e\n");
         // Run callback function
         char * cpkey = (char *) malloc(strlen(searchPointer->key)+1);
         if (cpkey == NULL){
