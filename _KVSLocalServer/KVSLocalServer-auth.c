@@ -39,11 +39,11 @@ struct sockaddr_in svaddr;
 int cfd;
 // mutex to prevent the sending and receiving of several requests at the same
 // time
-pthread_mutex_t sendReceiveMutex;
+pthread_mutex_t sendReceiveMutex = PTHREAD_MUTEX_INITIALIZER;
 // number of present request
 int numReq = INT_MIN;
 // mutex to prevent asynchronous changes to numReq
-pthread_mutex_t numReqMutex;
+pthread_mutex_t numReqMutex = PTHREAD_MUTEX_INITIALIZER;
 
 int initCom(void){
     cfd = socket(AF_INET, SOCK_DGRAM, 0); // create server socket
