@@ -3,7 +3,7 @@
 
 #define CB_SERVER_BACKLOG 1
 
-#define DEBUG_CALLBACK 
+//#define DEBUG_CALLBACK 
 
 #define CALLBACK_ALLOC_ERROR -1
 

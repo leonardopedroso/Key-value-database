@@ -63,6 +63,7 @@ int callbackAdd(char * key, void (*callback_function)(char *)){
     pthread_rwlock_wrlock(&callbacks_rwlock);
     CALLBACK * searchPointer = callbacks;
     if(callbacks == NULL){
+        newCallback->cb_id = cb_id;
         callbacks = newCallback;
     }else{
         cb_id++; // Increase cb id
@@ -93,12 +94,15 @@ void * callbackWrapperThread(void * arg){
         }
         searchPointer = searchPointer->prox;
     }
+    printf("c\n");
     if (searchPointer == NULL){
         pthread_rwlock_unlock(&callbacks_rwlock);
         pthread_exit(NULL);
+        printf("d\n");
         // Loss of synch
         // Callbacks were cleared connection was closed
     }else{
+        printf("e\n");
         // Run callback function
         char * cpkey = (char *) malloc(strlen(searchPointer->key)+1);
         if (cpkey == NULL){
@@ -114,7 +118,7 @@ void * callbackWrapperThread(void * arg){
         // Note that this function is not dependent on memory allocated by the connection
         // Thus, the connection can be terminated, callback memory deallocated, that this functions keeps running
         #ifdef DEBUG_CALLBACK
-        printf("Running callback id: %d.\n",*((int *)arg));
+        printf("Running callback id: %d | key: %s | fun: %p.\n",*((int *)arg),cpkey,cpfunc);
         #endif
         (*cpfunc)(cpkey);
         free(cpkey);

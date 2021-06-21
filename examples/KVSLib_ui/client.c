@@ -6,30 +6,52 @@
 #include "KVS-lib.h"
 #include "KVSLib_ui.h"
 
+void printCallback(char *key){
+    char *value = NULL;
+    get_value(key,&value);
+    printf("Buedas ananases\n");
+    printf("Callback function for key %s changed to %s!\n",key,value);
+    fflush(stdout);
+}
+
 int main(void){
     char *args[MAX_ARGS];
+    char *secret = NULL;
+    int exit = 0;
+    int aux;
 
     printUI();
 
-    while(1){
+    while(!exit){
         printf(">> ");
 
         switch(getCommand(args)){
             case CONNECT_DES:
-                printf("Connecting to group %s, secret %s\n",args[0],args[1]);
+                aux = establish_connection(args[0],args[1]);
+                printf("Return: %d\n",aux);
                 break;
             case PUT_DES:
-                printf("Putting value %s to key %s\n",args[0],args[1]);
+                aux = put_value(args[0],args[1]);
+                printf("Return: %d\n",aux);
                 break;
             case GET_DES:
-                printf("Getting value from key %s\n",args[0]);
+                aux = get_value(args[0],&secret);
+                printf("Value: %s, Return: %d\n",secret,aux);
                 break;
             case DEL_DES:
-                printf("Deleting key %s\n",args[0]);
+                aux = delete_value(args[0]);
+                printf("Return: %d\n",aux);
+                break;
+            case CALLBACK_DES:
+                aux = register_callback(args[0],&printCallback);
                 break;
             case CLOSE_DES:
-                printf("Closing connection\n");
-                exit(1);
+                aux = close_connection(args[0],args[1]);
+                printf("Return: %d\n",aux);
+                break;
+            case EXIT_DES:
+                printf("Exiting\n");
+                exit = 1;
                 break;
             case INV_DES:
                 break;
@@ -41,5 +63,10 @@ int main(void){
             free(args[i]);
             args[i] = NULL;
         }
+
+        free(secret);
+        secret = NULL;
     }
+
+    return 0;
 }

@@ -13,9 +13,11 @@ void printUI(void){
         "\tConnects to a KVSLocalServer giving the secret\n");
     printf(PUT_CMD ARG_DELIM "[<key>]" ARG_DELIM "[<value>]"
         "\t\tRemoves the group and all associated data\n");
-    printf(GET_CMD ARG_DELIM "[<key>] \t\t\tGet the value of a key\n");
+    printf(GET_CMD ARG_DELIM "[<key>]" ARG_DELIM "\t\t\tGet the value of a key\n");
+    printf(CALLBACK_CMD ARG_DELIM "[<key>]" ARG_DELIM "\t\tRegister callback\n");
     printf(DEL_CMD " [<key>] \t\t\tDelete key-value pair\n");
     printf(CLOSE_CMD "\t\t\t\tCloses the connection\n");
+    printf(EXIT_CMD "\t\t\t\tExits this UI\n");
 }
 
 // \brief Gets a string from the keyboard, handles the errors and prints them
@@ -28,7 +30,7 @@ int getStrFromStdin(char **input){
     // allocates memory
     *input = (char *)calloc(MAX_INPUT,sizeof(char));
     if(*input == NULL){
-        printf("Error allocating input\n");
+        printf("Error: Error allocating input\n");
         return ERR_ALLOC;
     }
 
@@ -39,14 +41,14 @@ int getStrFromStdin(char **input){
     if(fgets(*input,MAX_INPUT,stdin)==NULL){
         // on error, frees input
         free(*input);
-        printf("Error on fgets\n");
+        printf("Error: Error on fgets\n");
         return ERR_FGETS;
     }
     // If it does not find the new line character, it clears completely stdin
     if(memchr(*input,'\n',MAX_INPUT) == NULL){
         while(getchar() != '\n');
         free(*input);
-        printf("Input too large\n");
+        printf("Error: Input too large\n");
         return ERR_TOO_LARGE;
     }
     // the last char of input must be \n or \0 if MAX_INPUT is respected
@@ -149,8 +151,12 @@ int getCommand(char **args){
         des = promptInvNArgs(GET_CMD,GET_DES,nArgs,1);
     }else if(strcmp(command,DEL_CMD) == 0){
         des = promptInvNArgs(DEL_CMD,DEL_DES,nArgs,1);
+    }else if(strcmp(command,CALLBACK_CMD) == 0){
+        des = promptInvNArgs(CALLBACK_CMD,CALLBACK_DES,nArgs,1);
     }else if(strcmp(command,CLOSE_CMD) == 0){
         des = promptInvNArgs(CLOSE_CMD,CLOSE_DES,nArgs,0);
+    }else if(strcmp(command,EXIT_CMD) == 0){
+        des = promptInvNArgs(EXIT_CMD,EXIT_DES,nArgs,0);
     }else{
         printf("%s: Invalid command\n",command);
         des = INV_DES;

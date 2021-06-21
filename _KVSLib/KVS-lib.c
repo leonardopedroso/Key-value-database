@@ -204,7 +204,6 @@ int delete_value(char * key){
 int register_callback(char * key, void (*callback_function)(char *)){
     // Check if callback server is up and running
     if(cb_sock[1] == DISCONNECTED_SOCKET){
-        printf("a\n");
         return ERROR_CALLBACK_COM_ERROR;
     }
     // Add to callback list and find callback id in the aplication

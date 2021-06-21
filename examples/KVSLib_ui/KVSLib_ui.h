@@ -16,8 +16,12 @@
 #define GET_CMD "get"
 // Delete value corresponding command
 #define DEL_CMD "del"
+// Register a callback corresponding command
+#define CALLBACK_CMD "callback"
 // Close connection corresponding command
 #define CLOSE_CMD "close"
+// Exit UI corresponding command
+#define EXIT_CMD "exit"
 
 // \brief Prints the various commands of the menu of the user interface
 void printUI(void);
@@ -37,6 +41,10 @@ void printUI(void);
 #define DEL_DES 4
 // Close connection descriptor
 #define CLOSE_DES 6
+// Exit UI descriptor
+#define EXIT_DES 7
+// Register a callback descriptor
+#define CALLBACK_DES 8
 // Success return value
 #define SUCCESS 0
 // Error on fgets return value
