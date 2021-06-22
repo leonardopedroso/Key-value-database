@@ -1,0 +1,29 @@
+frame register_callback
+
+participantgroup #lightgray **Application** 
+participant ApplicationThread
+end
+
+participantgroup #lightgray **KVS-LocalServer** 
+participant KVSLocalServerClientThread
+end
+
+activate ApplicationThread
+
+parallel
+note over ApplicationThread: Add callback to ""key"" \nto the callback list, \nwith calback id ""cb_id""
+note over KVSLocalServerClientThread:""rcvQueryKVSLocalServer()""
+parallel off
+
+ApplicationThread->KVSLocalServerClientThread: ""queryRegisterCallback(key,cb_id)""
+deactivate ApplicationThread
+activate KVSLocalServerClientThread
+
+note over KVSLocalServerClientThread:Check if client has access to key
+
+note over KVSLocalServerClientThread: Add callback to callback list
+
+KVSLocalServerClientThread-->ApplicationThread: ""ansQueryRegisterCallback(status)""
+activate ApplicationThread
+
+deactivate KVSLocalServerClientThread
