@@ -102,6 +102,8 @@ int establish_connection (char * group_id, char * secret){
     }else{
         shutdown(cb_sock[0],2);
         close(cb_sock[0]); // Close callback socket listening to connections
+        close(clientSock);
+        clientSock = DISCONNECTED_SOCKET;
         remove(cb_server_addr);
     }
 
