@@ -9,8 +9,8 @@
 void printCallback(char *key){
     char *value = NULL;
     get_value(key,&value);
-    printf("Buedas ananases\n");
-    printf("Callback function for key %s changed to %s!\n",key,value);
+    printf("Buedas ananáses!\n");
+    printf("Callback function for key %s changed to %s!\n>> ",key,value);
     fflush(stdout);
 }
 
@@ -44,6 +44,7 @@ int main(void){
                 break;
             case CALLBACK_DES:
                 aux = register_callback(args[0],&printCallback);
+                printf("Return: %d\n",aux);
                 break;
             case CLOSE_DES:
                 aux = close_connection(args[0],args[1]);
